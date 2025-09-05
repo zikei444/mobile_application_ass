@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1086108263072",
+    "project_id": "mobile-application-c7b80",
+    "storage_bucket": "mobile-application-c7b80.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1086108263072:android:ad011f0b24c61fd9999fc5",
+        "android_client_info": {
+          "package_name": "my.edu.tarc.mobile_application_ass"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxNYP8tnHps3-Jg51PGep8UA2zhXuyMcs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
