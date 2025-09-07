@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../services/vehicle_service.dart';
 
 class VehicleForm extends StatefulWidget {
   const VehicleForm({super.key});
@@ -18,11 +22,7 @@ class _VehicleFormState extends State<VehicleForm> {
   String? _selectedModel;
 
   // Vehicle type & models mapping
-  final Map<String, List<String>> vehicleModels = {
-    "Mercedes": ["C180", "C500", "E200"],
-    "BMW": ["BMW 1", "BMW 2", "BMW X5"],
-    "Toyota": ["Vios", "Corolla", "Camry"],
-  };
+  final Map<String, List<String>> vehicleModels = {};
 
   @override
   Widget build(BuildContext context) {
@@ -122,15 +122,18 @@ class _VehicleFormState extends State<VehicleForm> {
 
               // Save Button
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.pop(context, {
-                      "plate": _plateController.text,
-                      "type": _selectedType!,
-                      "model": _selectedModel!,
-                      "kilometer": _kmController.text,
-                      "size": _sizeController.text,
+                onPressed: () async {
+                  final userId = FirebaseAuth.instance.currentUser?.uid;
+                  if (userId != null) {
+                    await VehicleService().addVehicle(userId, {
+                      'plate': _plateController.text,
+                      'type': _selectedType,
+                      'model': _selectedModel,
+                      'kilometer': int.parse(_kmController.text),
+                      'size': int.parse(_sizeController.text),
+                      'createdAt': FieldValue.serverTimestamp(),
                     });
+                    Navigator.pop(context); // go back to vehicle list
                   }
                 },
                 child: const Text("Save Vehicle"),

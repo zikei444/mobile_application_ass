@@ -38,8 +38,8 @@ class Home extends StatelessWidget {
                     )
                 ),
               ),
-              const SizedBox(height: 30,),
-              _logout(context)
+              // const SizedBox(height: 30,),
+              // _logout(context)
             ],
           ),
         ),
@@ -47,20 +47,20 @@ class Home extends StatelessWidget {
     );
   }
 
-  Widget _logout(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xff0D6EFD),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-        minimumSize: const Size(double.infinity, 60),
-        elevation: 0,
-      ),
-      onPressed: () async {
-        await AuthService().signout(context: context);
-      },
-      child: const Text("Sign Out"),
-    );
-  }
+  // Widget _logout(BuildContext context) {
+  //   return ElevatedButton(
+  //     style: ElevatedButton.styleFrom(
+  //       backgroundColor: const Color(0xff0D6EFD),
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(14),
+  //       ),
+  //       minimumSize: const Size(double.infinity, 60),
+  //       elevation: 0,
+  //     ),
+  //     onPressed: () async {
+  //       await AuthService().signout(context);
+  //     },
+  //     child: const Text("Sign Out"),
+  //   );
+  // }
 }

@@ -67,9 +67,14 @@ class AuthService {
 
       await Future.delayed(const Duration(seconds: 1));
       // ✅ Go to Dashboard if login successful
+      final user = FirebaseAuth.instance.currentUser;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Dashboard()),
+        MaterialPageRoute(
+          builder: (context) => Dashboard(
+            userEmail: user?.email ?? "Guest",
+          ),
+        ),
       );
 
     } on FirebaseAuthException catch(e) {
@@ -94,17 +99,14 @@ class AuthService {
 
   }
 
-  Future<void> signout({
-    required BuildContext context
-  }) async {
+  Future<void> signout(BuildContext context) async {
 
     await FirebaseAuth.instance.signOut();
     await Future.delayed(const Duration(seconds: 1));
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (BuildContext context) =>Login()
-        )
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Login()),
+          (route) => false,
     );
   }
 }
