@@ -1,113 +1,99 @@
 import 'package:flutter/material.dart';
-
 import '../vehicle/vehicle_list.dart';
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+
+class Dashboard extends StatefulWidget {
+  @override
+  _DashboardState createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
+  int vehicleCount = 3;   // later fetch from database
+  int customerCount = 5;  // later fetch from database
+  int staffCount = 2;     // later fetch from database
+  int sparePartCount = 7; // later fetch from database
+
+  final List<Map<String, dynamic>> dashboardItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize dashboard buttons
+    dashboardItems.addAll([
+      {
+        'label': 'Vehicles',
+        'icon': Icons.directions_car,
+        'count': () => vehicleCount,
+        'page': VehicleList(),
+      },
+      {
+        'label': 'Customers',
+        'icon': Icons.person,
+        'count': () => customerCount,
+        //'page': CustomerList(),
+      },
+      {
+        'label': 'Staff',
+        'icon': Icons.people,
+        'count': () => staffCount,
+       // 'page': StaffList(),
+      },
+      {
+        'label': 'Spare Parts',
+        'icon': Icons.build,
+        'count': () => sparePartCount,
+        //'page': SparePartList(),
+      },
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-        backgroundColor: Colors.blue,
-      ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        padding: const EdgeInsets.all(16),
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const VehicleList()),
-              );
-            },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 3,
-              child: const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.directions_car, size: 50, color: Colors.blue),
-                    SizedBox(height: 10),
-                    Text("Vehicles"),
-                  ],
-                ),
-              ),
-            ),
+      appBar: AppBar(title: Text("Dashboard")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          itemCount: dashboardItems.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.2,
           ),
-        ],
+          itemBuilder: (context, index) {
+            final item = dashboardItems[index];
+            return ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.all(16),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => item['page']),
+                );
+              },
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(item['icon'], size: 40),
+                  SizedBox(height: 10),
+                  Text(
+                    item['label'],
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "Total: ${item['count']()}",
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
-
-  // return Scaffold(
-  //   appBar: AppBar(title: const Text("Home")),
-  //   body: Padding(
-  //     padding: const EdgeInsets.all(16),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         // Summary boxes
-  //         Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             _summaryBox("52", "Jobs"),
-  //             _summaryBox("52", "Vehicle"),
-  //             _summaryBox("52", "Spare Parts"),
-  //             _summaryBox("52", "Customer"),
-  //           ],
-  //         ),
-  //         const SizedBox(height: 20),
-  //
-  //         const Text("Job Schedule List For Today", style: TextStyle(fontWeight: FontWeight.bold)),
-  //         const SizedBox(height: 10),
-  //
-  //         _jobSchedule("C01 - Cashier1", "Cashier", "9am - 3pm"),
-  //         _jobSchedule("M01 - Mechanics1", "Mechanics", "9am - 3pm"),
-  //
-  //         const SizedBox(height: 20),
-  //         const Text("Low Stock Notification", style: TextStyle(fontWeight: FontWeight.bold)),
-  //
-  //         _lowStockRow("Engine", "15"),
-  //         _lowStockRow("Tayar", "15"),
-  //       ],
-  //     ),
-  //   ),
-  // );
-
-
-  Widget _summaryBox(String count, String label) {
-    return Column(
-      children: [
-        Text(count,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        Text(label),
-      ],
-    );
-  }
-
-  Widget _jobSchedule(String name, String role, String time) {
-    return Card(
-      child: ListTile(
-        leading: const CircleAvatar(child: Icon(Icons.person)),
-        title: Text(name),
-        subtitle: Text(role),
-        trailing: Text(time),
-      ),
-    );
-  }
-
-  Widget _lowStockRow(String product, String qty) {
-    return ListTile(
-      title: Text(product),
-      trailing: Text(qty),
-    );
-  }
-
 }

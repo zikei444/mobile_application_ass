@@ -69,7 +69,7 @@ class AuthService {
       // ✅ Go to Dashboard if login successful
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
+        MaterialPageRoute(builder: (context) => Dashboard()),
       );
 
     } on FirebaseAuthException catch(e) {

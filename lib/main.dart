@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mobile_application_ass/providers/vehicle_provider.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'login/login.dart';
 
@@ -10,7 +12,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => VehicleProvider()),
+    ],
+    child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
