@@ -1,50 +1,92 @@
 import 'package:flutter/material.dart';
 
+import '../vehicle/vehicle_list.dart';
+
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
-      body: Padding(
+      appBar: AppBar(
+        title: const Text("Dashboard"),
+        backgroundColor: Colors.blue,
+      ),
+      body: GridView.count(
+        crossAxisCount: 2,
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Summary boxes
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _summaryBox("52", "Jobs"),
-                _summaryBox("52", "Vehicle"),
-                _summaryBox("52", "Spare Parts"),
-                _summaryBox("52", "Customer"),
-              ],
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const VehicleList()),
+              );
+            },
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 3,
+              child: const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.directions_car, size: 50, color: Colors.blue),
+                    SizedBox(height: 10),
+                    Text("Vehicles"),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-
-            const Text("Job Schedule List For Today", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-
-            _jobSchedule("C01 - Cashier1", "Cashier", "9am - 3pm"),
-            _jobSchedule("M01 - Mechanics1", "Mechanics", "9am - 3pm"),
-
-            const SizedBox(height: 20),
-            const Text("Low Stock Notification", style: TextStyle(fontWeight: FontWeight.bold)),
-
-            _lowStockRow("Engine", "15"),
-            _lowStockRow("Tayar", "15"),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+  // return Scaffold(
+  //   appBar: AppBar(title: const Text("Home")),
+  //   body: Padding(
+  //     padding: const EdgeInsets.all(16),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         // Summary boxes
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             _summaryBox("52", "Jobs"),
+  //             _summaryBox("52", "Vehicle"),
+  //             _summaryBox("52", "Spare Parts"),
+  //             _summaryBox("52", "Customer"),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 20),
+  //
+  //         const Text("Job Schedule List For Today", style: TextStyle(fontWeight: FontWeight.bold)),
+  //         const SizedBox(height: 10),
+  //
+  //         _jobSchedule("C01 - Cashier1", "Cashier", "9am - 3pm"),
+  //         _jobSchedule("M01 - Mechanics1", "Mechanics", "9am - 3pm"),
+  //
+  //         const SizedBox(height: 20),
+  //         const Text("Low Stock Notification", style: TextStyle(fontWeight: FontWeight.bold)),
+  //
+  //         _lowStockRow("Engine", "15"),
+  //         _lowStockRow("Tayar", "15"),
+  //       ],
+  //     ),
+  //   ),
+  // );
+
+
   Widget _summaryBox(String count, String label) {
     return Column(
       children: [
-        Text(count, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(count,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         Text(label),
       ],
     );
@@ -67,4 +109,5 @@ class DashboardPage extends StatelessWidget {
       trailing: Text(qty),
     );
   }
+
 }

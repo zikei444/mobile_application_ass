@@ -1,46 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_application_ass/vehicle/vehicle_details.dart';
-
 import 'add_vehicle.dart';
 
+class VehicleList extends StatefulWidget {
+  const VehicleList({super.key});
 
-class VehicleListPage extends StatelessWidget {
-  const VehicleListPage({super.key});
+  @override
+  State<VehicleList> createState() => _VehicleListState();
+}
+
+class _VehicleListState extends State<VehicleList> {
+  // Temporary in-memory list (later can connect to Firebase)
+  List<Map<String, String>> vehicles = [
+    {"name": "Toyota Corolla", "plate": "ABC1234"},
+    {"name": "Honda Civic", "plate": "XYZ5678"},
+  ];
+
+  void addVehicle(Map<String, String> vehicle) {
+    setState(() {
+      vehicles.add(vehicle);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Vehicle"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AddVehiclePage()));
-            },
-            child: const Text("Add Vehicle"),
-          )
-        ],
+        title: const Text("Vehicle List"),
+        backgroundColor: Colors.blue,
       ),
-      body: ListView(
-        children: [
-          _vehicleItem(context, "#89567", "Mercedes Benz", "AVS 2044"),
-          _vehicleItem(context, "#89568", "BMW", "BMS 2021"),
-        ],
+      body: ListView.builder(
+        itemCount: vehicles.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            leading: const Icon(Icons.directions_car),
+            title: Text(vehicles[index]["name"]!),
+            subtitle: Text("Plate: ${vehicles[index]["plate"]}"),
+          );
+        },
       ),
-    );
-  }
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.add),
+        onPressed: () async {
+          final newVehicle = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const VehicleForm(),
+            ),
+          );
 
-  Widget _vehicleItem(BuildContext context, String id, String type, String plate) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.directions_car, size: 40),
-        title: Text(type),
-        subtitle: Text(plate),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => VehicleDetailsPage(
-            id: id, type: type, plate: plate,
-          )));
+          if (newVehicle != null) {
+            addVehicle(newVehicle);
+          }
         },
       ),
     );

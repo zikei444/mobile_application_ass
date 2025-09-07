@@ -1,36 +1,63 @@
 import 'package:flutter/material.dart';
 
-class AddVehiclePage extends StatelessWidget {
-  const AddVehiclePage({super.key});
+class VehicleForm extends StatefulWidget {
+  const VehicleForm({super.key});
+
+  @override
+  State<VehicleForm> createState() => _VehicleFormState();
+}
+
+class _VehicleFormState extends State<VehicleForm> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _plateController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final plateController = TextEditingController();
-    final typeController = TextEditingController();
-    final modelController = TextEditingController();
-    final kmController = TextEditingController();
-    final sizeController = TextEditingController();
-
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Vehicle")),
+      appBar: AppBar(
+        title: const Text("Add Vehicle"),
+        backgroundColor: Colors.blue,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(controller: plateController, decoration: const InputDecoration(labelText: "Plate Number")),
-            TextField(controller: typeController, decoration: const InputDecoration(labelText: "Type")),
-            TextField(controller: modelController, decoration: const InputDecoration(labelText: "Model")),
-            TextField(controller: kmController, decoration: const InputDecoration(labelText: "Kilometer")),
-            TextField(controller: sizeController, decoration: const InputDecoration(labelText: "Size")),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Later: Save to database
-                Navigator.pop(context);
-              },
-              child: const Text("Submit"),
-            )
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: "Vehicle Name",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                value!.isEmpty ? "Enter vehicle name" : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _plateController,
+                decoration: const InputDecoration(
+                  labelText: "Plate Number",
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                value!.isEmpty ? "Enter plate number" : null,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.pop(context, {
+                      "name": _nameController.text,
+                      "plate": _plateController.text,
+                    });
+                  }
+                },
+                child: const Text("Save Vehicle"),
+              ),
+            ],
+          ),
         ),
       ),
     );
