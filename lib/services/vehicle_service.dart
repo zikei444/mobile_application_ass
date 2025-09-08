@@ -27,6 +27,12 @@ class VehicleService {
   Future<void> deleteVehicle(String id) async {
     await vehicles.doc(id).delete();
   }
+  Future<void> deleteAllVehicles() async {
+    final snapshot = await vehicles.get();
+    for (var doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
+  }
   // Future<void> deleteVehicle(String userId, String vehicleId) async {
   //   await _firestore
   //       .collection('users')
