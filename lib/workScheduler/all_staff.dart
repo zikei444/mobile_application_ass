@@ -26,7 +26,7 @@ class StaffListPage extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => StaffDetailPage(staffId: d.id),
+                    builder: (_) => StaffCalendarPage(staffId: d.id),
                   ),
                 ),
               );

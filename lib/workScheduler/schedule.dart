@@ -12,12 +12,34 @@ class CalendarPage extends StatefulWidget {
 
 class _CalendarPageState extends State<CalendarPage> {
   DateTime _selected = DateTime.now();
+  Map<String, Map<String, dynamic>> staffMap = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStaffs();
+  }
+
+  Future<void> _loadStaffs() async {
+    final snap = await FirebaseFirestore.instance.collection('staff').get();
+    final map = <String, Map<String, dynamic>>{};
+    for (var s in snap.docs) {
+      map[s.id] = s.data();
+    }
+    setState(() => staffMap = map);
+  }
+
 
   @override
   Widget build(BuildContext context) {
     // beginning and end of the chosen day
     final start = DateTime(_selected.year, _selected.month, _selected.day);
     final end = start.add(const Duration(days: 1));
+    // role 对应颜色
+    final Map<String, Color> roleColors = {
+      'Cashier': Colors.green,
+      'Mechanic': Colors.blue,
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -65,18 +87,45 @@ class _CalendarPageState extends State<CalendarPage> {
                 }
 
                 return ListView.builder(
+                  padding: const EdgeInsets.all(8),
                   itemCount: docs.length,
                   itemBuilder: (context, i) {
-                    final d = docs[i].data() as Map<String, dynamic>;
+                    // 先把 docs 转成可排序的 List
+                    final sortedDocs = [...docs];
+                    sortedDocs.sort((a, b) {
+                      final ra = staffMap[a['staffId']]?['role'] ?? '';
+                      final rb = staffMap[b['staffId']]?['role'] ?? '';
+                      return ra.compareTo(rb); // 依 role 字母顺序排
+                    });
+
+                    final d = sortedDocs[i].data() as Map<String, dynamic>;
                     final startTime = d['shiftStart'] ?? '';
                     final endTime   = d['shiftEnd'] ?? '';
-                    final staff = [d['staffId'] ?? ''];
+                    final staffId   = d['staffId'] ?? '';
+
+                    // 查 staffMap
+                    final staffData = staffMap[staffId];
+                    final name = staffData?['name'] ?? staffId;
+                    final role = staffData?['role'] ?? '';
+
+                    // role 映射到颜色
+                    final color = roleColors[role] ?? Colors.grey;
 
                     return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      elevation: 3,
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       child: ListTile(
-                        title: Text('Shift: ($startTime – $endTime)'),
-                        subtitle: Text('Staff: ${staff.join(', ')}'),
+                        leading: CircleAvatar(
+                          backgroundColor: color.withOpacity(0.2),
+                          child: Icon(Icons.person, color: color),
+                        ),
+                        title: Text(
+                          name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        subtitle: Text('$role • Shift: $startTime – $endTime'),
+                        trailing: const Icon(Icons.chevron_right),
                       ),
                     );
                   },
