@@ -1,8 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/vehicle_service.dart';
 
 class VehicleForm extends StatefulWidget {
@@ -22,7 +21,10 @@ class _VehicleFormState extends State<VehicleForm> {
   String? _selectedModel;
 
   // Vehicle type & models mapping
-  final Map<String, List<String>> vehicleModels = {};
+  final Map<String, List<String>> vehicleModels = {
+    "Mercedes": ["C180", "C500"],
+    "BMW": ["BMW1", "BMW2"],
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -123,17 +125,24 @@ class _VehicleFormState extends State<VehicleForm> {
               // Save Button
               ElevatedButton(
                 onPressed: () async {
-                  final userId = FirebaseAuth.instance.currentUser?.uid;
-                  if (userId != null) {
-                    await VehicleService().addVehicle(userId, {
-                      'plate': _plateController.text,
-                      'type': _selectedType,
-                      'model': _selectedModel,
-                      'kilometer': int.parse(_kmController.text),
-                      'size': int.parse(_sizeController.text),
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
-                    Navigator.pop(context); // go back to vehicle list
+                  if (_formKey.currentState!.validate()) {
+                    final userId = FirebaseAuth.instance.currentUser?.uid;
+                    if (userId != null) {
+                      await VehicleService().addVehicle(
+                        plateNumber: _plateController.text,
+                        type: _selectedType!,
+                        model: _selectedModel!,
+                        kilometer: int.parse(_kmController.text),
+                        size: int.parse(_sizeController.text),
+                      );
+
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Vehicle Added!")),
+                      );
+
+                      Navigator.pop(context); // go back to vehicle list
+                    }
                   }
                 },
                 child: const Text("Save Vehicle"),
