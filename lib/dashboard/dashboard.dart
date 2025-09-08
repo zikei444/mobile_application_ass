@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../vehicle/vehicle_list.dart';
+import '../workScheduler/schedule.dart';
 
 
 class Dashboard extends StatefulWidget {
@@ -42,7 +43,7 @@ class _DashboardState extends State<Dashboard> {
         'label': 'Staff',
         'icon': Icons.people,
         'count': () => staffCount,
-       // 'page': StaffList(),
+        'page': CalendarPage(),
       },
       {
         'label': 'Spare Parts',
