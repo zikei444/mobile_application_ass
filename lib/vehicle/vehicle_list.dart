@@ -24,10 +24,10 @@ class VehicleListPage extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: VehicleService().getVehicles(userId!),
+        stream: VehicleService().getVehicles(), // no userId needed
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator()); // only first load shows loader
+            return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(child: Text("No vehicles found."));
@@ -42,7 +42,8 @@ class VehicleListPage extends StatelessWidget {
               final data = v.data() as Map<String, dynamic>;
 
               return ListTile(
-                title: Text("${data['plate']} - ${data['type']}"),
+                leading: const Icon(Icons.directions_car),
+                title: Text("${data['plateNumber']} - ${data['type']}"),
                 subtitle: Text("Model: ${data['model']} | KM: ${data['kilometer']}"),
                 onTap: () {
                   Navigator.push(
@@ -55,7 +56,7 @@ class VehicleListPage extends StatelessWidget {
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
-                    VehicleService().deleteVehicle(userId, v.id);
+                    VehicleService().deleteVehicle(v.id); // only pass ID
                   },
                 ),
               );
@@ -63,6 +64,7 @@ class VehicleListPage extends StatelessWidget {
           );
         },
       ),
+//
     );
   }
 }

@@ -24,7 +24,9 @@ class VehicleService {
   Stream<QuerySnapshot> getVehicles() {
     return vehicles.orderBy('createdAt', descending: true).snapshots();
   }
-
+  Future<void> deleteVehicle(String id) async {
+    await vehicles.doc(id).delete();
+  }
   // Future<void> deleteVehicle(String userId, String vehicleId) async {
   //   await _firestore
   //       .collection('users')
