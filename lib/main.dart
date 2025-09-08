@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile_application_ass/providers/vehicle_provider.dart';
+// import 'package:mobile_application_ass/seed/august_scheduler.dart';
+// import 'package:mobile_application_ass/seed/staff_seed.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'login/login.dart';
@@ -11,6 +13,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // await seedStaff();
+  // print('staff collection created');
+  //
+  // await seedAugustSchedule();
+  // print('schedule collection created');
+
 
   runApp(MultiProvider(
     providers: [
@@ -30,6 +39,7 @@ class MyApp extends StatelessWidget {
         home: Login()
     );
   }
+
   // @override
   // Widget build(BuildContext context) {
   //   return MaterialApp(
