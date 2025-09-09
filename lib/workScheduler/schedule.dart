@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobile_application_ass/workScheduler/staff_detail_page.dart';
 
 import 'all_staff.dart';
 
@@ -27,6 +28,107 @@ class _CalendarPageState extends State<CalendarPage> {
       map[s.id] = s.data();
     }
     setState(() => staffMap = map);
+  }
+
+  Future<void> _openAddScheduleDialog() async {
+    String? selectedStaffId;
+    TimeOfDay? startTime;
+    TimeOfDay? endTime;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text("Add Schedule"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // dropdown: staff list
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: "Select Staff"),
+                    items: staffMap.entries.map((e) {
+                      final staffId = e.key;
+                      final name = e.value['name'] ?? staffId;
+                      final role = e.value['role'] ?? '';
+                      return DropdownMenuItem(
+                        value: staffId,
+                        child: Text("$name ($role)"),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setStateDialog(() => selectedStaffId = val);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // pick start time
+                  ElevatedButton(
+                    onPressed: () async {
+                      final t = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (t != null) setStateDialog(() => startTime = t);
+                    },
+                    child: Text(startTime == null
+                        ? "Pick Start Time"
+                        : "Start: ${startTime!.format(context)}"),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // pick end time
+                  ElevatedButton(
+                    onPressed: () async {
+                      final t = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (t != null) setStateDialog(() => endTime = t);
+                    },
+                    child: Text(endTime == null
+                        ? "Pick End Time"
+                        : "End: ${endTime!.format(context)}"),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedStaffId != null &&
+                        startTime != null &&
+                        endTime != null) {
+                      final startStr =
+                      startTime!.format(context); // e.g. 09:00 AM
+                      final endStr = endTime!.format(context);
+
+                      await FirebaseFirestore.instance
+                          .collection('schedules')
+                          .add({
+                        'staffId': selectedStaffId,
+                        'date': Timestamp.fromDate(_selected),
+                        'shiftStart': startStr,
+                        'shiftEnd': endStr,
+                        'status': 'working',
+                      });
+
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text("Add"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
 
@@ -126,6 +228,14 @@ class _CalendarPageState extends State<CalendarPage> {
                         ),
                         subtitle: Text('$role • Shift: $startTime – $endTime'),
                         trailing: const Icon(Icons.chevron_right),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => StaffCalendarPage(staffId: staffId),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
@@ -135,6 +245,12 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openAddScheduleDialog,
+        label: const Text("Add Schedule"),
+        icon: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
