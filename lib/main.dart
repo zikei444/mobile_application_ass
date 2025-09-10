@@ -4,6 +4,10 @@ import 'package:mobile_application_ass/providers/vehicle_provider.dart';
 import 'package:mobile_application_ass/seed/july_scheduler.dart';
 // import 'package:mobile_application_ass/seed/august_scheduler.dart';
 // import 'package:mobile_application_ass/seed/staff_seed.dart';
+import 'package:mobile_application_ass/seed/spare_part.dart';
+//import 'package:mobile_application_ass/seed/customer.dart';
+//import 'package:mobile_application_ass/seed/appointment.dart';
+//import 'package:mobile_application_ass/seed/car.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'login/login.dart';
@@ -24,13 +28,21 @@ void main() async {
   // await seedJulySchedule();
   // print('schedule collection created');
 
+  await seedSpareParts();
+  //await seedCustomers();
+  //await seedAppointments();
+  //await seedCars();
+  //print("All data seeded successfully!");
+
+  //  await seedProcurements();
+    print("All data seeded successfully!");
 
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => VehicleProvider()),
     ],
     child: const MyApp(),
-    ),
+  ),
   );
 }
 
@@ -44,14 +56,14 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return MaterialApp(
-  //     title: 'Firebase Demo',
-  //     home: Scaffold(
-  //       appBar: AppBar(title: const Text('Firebase Initialized')),
-  //       body: const Center(child: Text('Hello Firebase')),
-  //     ),
-  //   );
-  // }
+// @override
+// Widget build(BuildContext context) {
+//   return MaterialApp(
+//     title: 'Firebase Demo',
+//     home: Scaffold(
+//       appBar: AppBar(title: const Text('Firebase Initialized')),
+//       body: const Center(child: Text('Hello Firebase')),
+//     ),
+//   );
+// }
 }

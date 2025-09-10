@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'spare_part_detail.dart';
+import 'procurement.dart';
+
 
 class SparePartDashboard extends StatefulWidget {
   const SparePartDashboard({super.key});
@@ -167,8 +169,12 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: () {
-                // Procurement Requests navigation
-              },
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Procurement(),
+                  ),
+                );              },
               child: const Text('Procurement Requests'),
             ),
             const SizedBox(height: 60),

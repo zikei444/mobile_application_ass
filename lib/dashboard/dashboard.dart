@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../vehicle/vehicle_list.dart';
 import '../workScheduler/schedule.dart';
+import '../sparePart/spare_part_dashboard.dart';
 
 
 class Dashboard extends StatefulWidget {
@@ -51,7 +52,7 @@ class _DashboardState extends State<Dashboard> {
         'label': 'Spare Parts',
         'icon': Icons.build,
         'count': () => sparePartCount,
-        //'page': SparePartList(),
+        'page': SparePartDashboard(),
       },
     ]);
   }
