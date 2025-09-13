@@ -114,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildCalendar(),
                 const SizedBox(height: 20),
 
-                // Appointment stats
+                // Appointment
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -163,7 +163,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       DateTime d = (a['date'] as Timestamp).toDate();
                       return Card(
                         child: ListTile(
-                          title: Text("ID: ${a['id']}"), // Show only ID
+                          title: Text("ID: ${a['id']}"),
                           onTap: () {
                             showDialog(
                               context: context,

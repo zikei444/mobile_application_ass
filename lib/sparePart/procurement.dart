@@ -89,7 +89,7 @@ class _ProcurementState extends State<Procurement> {
             Expanded(
               child: Center(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min, // center vertically
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
@@ -145,7 +145,7 @@ class _ProcurementState extends State<Procurement> {
                 ),
               ),
             ),
-            // Bottom buttons
+            // Navigation buttons
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: () {},

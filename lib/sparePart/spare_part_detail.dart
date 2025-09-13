@@ -120,7 +120,6 @@ class _SparePartDetailState extends State<SparePartDetail> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Single Level Button (centered)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -176,7 +175,7 @@ class _SparePartDetailState extends State<SparePartDetail> {
 
             const SizedBox(height: 10),
 
-            // Bottom Buttons
+            // Navigation Buttons
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: () {

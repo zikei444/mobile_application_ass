@@ -156,10 +156,9 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
               ),
             ),
 
-            // Space to move buttons up
             const SizedBox(height: 30),
 
-            // Bottom Buttons
+            // Navigation Buttons
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: () {

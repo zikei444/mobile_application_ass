@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobile_application_ass/sparePart/spare_part_dashboard.dart';
 import 'procurement.dart';
 
 class TrackPartUsage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
         .snapshots();
   }
 
-  /// Fetch records by date (start of day to end of day)
+  /// Fetch records by date
   Stream<QuerySnapshot> getRecordsByDate(DateTime date) {
     DateTime startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0);
     DateTime endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
@@ -35,7 +36,6 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
         .snapshots();
   }
 
-  /// Helper to build record list
   Widget buildRecordList(AsyncSnapshot<QuerySnapshot> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return const Center(child: CircularProgressIndicator());
@@ -110,7 +110,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                 ),
               ),
 
-            /// Show Recent button (closer to calendar)
+            /// Show Recent button
             ElevatedButton.icon(
               icon: const Icon(Icons.refresh),
               label: const Text("Show Recent Records"),
@@ -122,7 +122,6 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
               },
             ),
 
-            /// Record list right after button
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: recordStream,
@@ -132,7 +131,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
               ),
             ),
 
-            /// Bottom navigation buttons
+            /// Navigation buttons
             Column(
               children: [
                 const SizedBox(height: 10),
@@ -142,11 +141,11 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TrackPartUsage(),
+                        builder: (context) => const SparePartDashboard(),
                       ),
                     );
                   },
-                  child: const Text('Track Part Usage'),
+                  child: const Text('Spare Part Control'),
                 ),
                 const SizedBox(height: 15),
                 ElevatedButton(
