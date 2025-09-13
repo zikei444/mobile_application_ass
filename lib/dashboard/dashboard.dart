@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../vehicle/vehicle_list.dart';
 import '../workScheduler/schedule.dart';
 import '../sparePart/spare_part_dashboard.dart';
+import '../customer/customerList.dart';
 
 
 class Dashboard extends StatefulWidget {
@@ -40,7 +41,7 @@ class _DashboardState extends State<Dashboard> {
         'label': 'Customers',
         'icon': Icons.person,
         'count': () => customerCount,
-        //'page': CustomerList(),
+        'page': const CustomerList(),
       },
       {
         'label': 'Schedules',
