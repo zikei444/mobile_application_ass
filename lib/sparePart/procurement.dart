@@ -162,7 +162,7 @@ class _ProcurementState extends State<Procurement> {
                   ),
                 );
               },
-              child: const Text('Procurement Requests'),
+              child: const Text('Spare Part Control'),
             ),
             const SizedBox(height: 60),
           ],
