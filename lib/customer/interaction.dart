@@ -112,9 +112,7 @@ class InteractionPage extends StatelessWidget {
                         (appointmentData['status'] ?? 'In Progress')
                             .toString();
 
-                        final clickable = status.toLowerCase() == "in progress" ||
-                            status.toLowerCase() == "scheduled" ||
-                            status.toLowerCase() == "pending";
+                        final clickable = true;
 
                         String formattedDate =
                         appointmentData['date'] is Timestamp
@@ -127,17 +125,25 @@ class InteractionPage extends StatelessWidget {
                           child: ListTile(
                             title: Text("Appointment ID: $appointmentId"),
                             subtitle: Text("Date: $formattedDate"),
-                            trailing: Chip(
-                              label: Text(
-                                status,
-                                style: const TextStyle(color: Colors.white),
+                            // ✅ Vertically centered status chip
+                            trailing: SizedBox(
+                              width: 110,
+                              height: 40,
+                              child: Center(          // <-- Center vertically & horizontally
+                                child: Chip(
+                                  label: Text(
+                                    status,
+                                    style:
+                                    const TextStyle(color: Colors.white),
+                                  ),
+                                  backgroundColor:
+                                  status.toLowerCase() == "completed"
+                                      ? Colors.green
+                                      : status.toLowerCase() == "cancelled"
+                                      ? Colors.red
+                                      : Colors.orange,
+                                ),
                               ),
-                              // ✅ Pending also shows orange
-                              backgroundColor: clickable
-                                  ? Colors.orange
-                                  : status.toLowerCase() == "completed"
-                                  ? Colors.green
-                                  : Colors.red,
                             ),
                             onTap: clickable
                                 ? () {
@@ -198,8 +204,7 @@ class AppointmentDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Appointment ID: $appointmentId",
-                style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text("Service Type: ${appointmentData['serviceType'] ?? ''}"),
             const SizedBox(height: 8),
@@ -211,35 +216,59 @@ class AppointmentDetailPage extends StatelessWidget {
             const Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () async {
-                    await firestore
-                        .collection("appointments")
-                        .doc(appointmentId)
-                        .update({"status": "Cancelled"});
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  onPressed: () async {
-                    await firestore
-                        .collection("appointments")
-                        .doc(appointmentId)
-                        .update({"status": "Completed"});
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Complete"),
-                ),
-              ],
-            )
+              children: _buildActionButtons(context, firestore, status),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  List<Widget> _buildActionButtons(
+      BuildContext context, FirebaseFirestore firestore, String status) {
+    final lowerStatus = status.toLowerCase();
+    final List<Widget> buttons = [];
+
+    Future<void> updateStatus(String newStatus) async {
+      await firestore
+          .collection("appointments")
+          .doc(appointmentId)
+          .update({"status": newStatus});
+      Navigator.pop(context);
+    }
+
+    if (lowerStatus == "pending") {
+      buttons.addAll([
+        _actionBtn("Cancel", Colors.red, () => updateStatus("Cancelled")),
+        _actionBtn("Complete", Colors.green, () => updateStatus("Completed")),
+        _actionBtn("Scheduled", Colors.orange, () => updateStatus("Scheduled")),
+      ]);
+    } else if (lowerStatus == "scheduled") {
+      buttons.addAll([
+        _actionBtn("Cancel", Colors.red, () => updateStatus("Cancelled")),
+        _actionBtn("Complete", Colors.green, () => updateStatus("Completed")),
+        _actionBtn("In Progress", Colors.orange,
+                () => updateStatus("In Progress")),
+      ]);
+    } else if (lowerStatus == "in progress") {
+      buttons.addAll([
+        _actionBtn("Cancel", Colors.red, () => updateStatus("Cancelled")),
+        _actionBtn("Complete", Colors.green, () => updateStatus("Completed")),
+      ]);
+    } else if (lowerStatus == "cancelled" || lowerStatus == "completed") {
+      buttons.add(
+        _actionBtn("Close", Colors.grey, () => Navigator.pop(context)),
+      );
+    }
+
+    return buttons;
+  }
+
+  Widget _actionBtn(String text, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(backgroundColor: color),
+      onPressed: onPressed,
+      child: Text(text),
     );
   }
 }
