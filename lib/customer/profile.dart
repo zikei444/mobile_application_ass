@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
   final String customerId;
@@ -28,7 +29,6 @@ class _ProfilePageState extends State<ProfilePage> {
         .collection('cars')
         .doc(customer['carId'])
         .get();
-
     final car = carSnap.data();
 
     // Fetch appointments
@@ -36,7 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
         .collection('appointments')
         .where('customerId', isEqualTo: widget.customerId)
         .get();
-
     final appointments = appointmentSnap.docs.map((e) => e.data()).toList();
 
     return {
@@ -88,62 +87,97 @@ class _ProfilePageState extends State<ProfilePage> {
               DateTime.now().month)
               .length;
 
+          // Format last serviced date
+          String lastServicedStr = "N/A";
+          if (customer['lastServiced'] != null &&
+              customer['lastServiced'] is Timestamp) {
+            DateTime dt = (customer['lastServiced'] as Timestamp).toDate();
+            lastServicedStr = DateFormat.yMMMMd().add_jm().format(dt);
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Profile section
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${customer['id']} - ${customer['name']}",
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const Text("Customer"),
-                      ],
-                    )
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Calendar
-                _buildCalendar(),
-                const SizedBox(height: 20),
-
-                // Appointment
+                // ===== Customer Profile =====
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Column(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                          "Total Appointment (Current Month): $totalAppointmentsMonth time(s)"),
-                      Text(
-                          "Total Appointment (Current Year): $totalAppointmentsYear time(s)"),
+                      const Icon(Icons.person, size: 48, color: Colors.blue),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "${customer['id']} - ${customer['name']}",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 18),
+                            ),
+                            const SizedBox(height: 4),
+                            Text("Email: ${customer['email'] ?? 'N/A'}"),
+                            Text("Phone: ${customer['phone'] ?? 'N/A'}"),
+                            Text("Address: ${customer['address'] ?? 'N/A'}"),
+                            Text("Last Serviced: $lastServicedStr"),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                // Car info
+                // ===== Calendar =====
+                _buildCalendar(),
+                const SizedBox(height: 20),
+
+                // ===== Appointment Summary =====
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Total Appointment (Current Month): $totalAppointmentsMonth time(s)",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text(
+                        "Total Appointment (Current Year): $totalAppointmentsYear time(s)",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ===== Car Info =====
                 if (car != null)
                   Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8)),
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text("Car Information",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
                         Text("Plate Number: ${car['plateNumber']}"),
                         Text("Type: ${car['brand']}"),
                         Text("Model: ${car['model']}"),
@@ -153,7 +187,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 const SizedBox(height: 20),
 
-                // Service History
+                // ===== Service History =====
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -183,8 +217,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context),
+                                    onPressed: () => Navigator.pop(context),
                                     child: const Text("Close"),
                                   )
                                 ],
