@@ -111,13 +111,16 @@ class InteractionPage extends StatelessWidget {
                         final status =
                         (appointmentData['status'] ?? 'In Progress')
                             .toString();
-                        final clickable = status.toLowerCase() == "in progress" ||
-                            status.toLowerCase() == "scheduled";
 
-                        String formattedDate = appointmentData['date'] is Timestamp
-                            ? DateFormat('yyyy-MM-dd – kk:mm')
-                            .format((appointmentData['date'] as Timestamp)
-                            .toDate())
+                        final clickable = status.toLowerCase() == "in progress" ||
+                            status.toLowerCase() == "scheduled" ||
+                            status.toLowerCase() == "pending";
+
+                        String formattedDate =
+                        appointmentData['date'] is Timestamp
+                            ? DateFormat('yyyy-MM-dd – kk:mm').format(
+                            (appointmentData['date'] as Timestamp)
+                                .toDate())
                             : appointmentData['date'] ?? '';
 
                         return Card(
@@ -129,6 +132,7 @@ class InteractionPage extends StatelessWidget {
                                 status,
                                 style: const TextStyle(color: Colors.white),
                               ),
+                              // ✅ Pending also shows orange
                               backgroundColor: clickable
                                   ? Colors.orange
                                   : status.toLowerCase() == "completed"
@@ -194,8 +198,8 @@ class AppointmentDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Appointment ID: $appointmentId",
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
+                style:
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text("Service Type: ${appointmentData['serviceType'] ?? ''}"),
             const SizedBox(height: 8),

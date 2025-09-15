@@ -28,9 +28,9 @@ void main() async {
   // await seedJulySchedule();
   // print('schedule collection created');
 
-//  await seedSpareParts();
+  //  await seedSpareParts();
   //await seedCustomers();
-//  await seedAppointments();
+  //  await seedAppointments();
   //await seedCars();
   //print("All data seeded successfully!");
 

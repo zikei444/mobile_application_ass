@@ -19,7 +19,8 @@ Future<void> seedAppointments() async {
     'Scheduled',
     'In Progress',
     'Completed',
-    'Cancelled'
+    'Cancelled',
+    'Pending'
   ];
 
   String generateNotes(String serviceType) {
@@ -45,7 +46,7 @@ Future<void> seedAppointments() async {
 
   List<Map<String, dynamic>> appointments = [];
 
-  for (int i = 1; i <= 10; i++) {
+  for (int i = 1; i <= 50; i++) {
     String appointmentId = 'A${i.toString().padLeft(3, '0')}';
     String customerId = 'C${(random.nextInt(10) + 1).toString().padLeft(2, '0')}';
     String carId = 'V${(random.nextInt(10) + 1).toString().padLeft(3, '0')}';
@@ -77,5 +78,5 @@ Future<void> seedAppointments() async {
     batch.set(ref, appointment);
   }
   await batch.commit();
-  print("10 Appointments seed");
+  print("50 Appointments seed");
 }
