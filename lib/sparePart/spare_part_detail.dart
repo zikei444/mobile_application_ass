@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'procurement.dart';
+import 'trackPartUsage.dart';
 
 class SparePartDetail extends StatefulWidget {
   final String category;
@@ -179,8 +180,12 @@ class _SparePartDetailState extends State<SparePartDetail> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: () {
-                // Track Part Usage navigation
-              },
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TrackPartUsage(),
+                  ),
+                );              },
               child: const Text('Track Part Usage'),
             ),
             const SizedBox(height: 20),

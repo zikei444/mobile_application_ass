@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'spare_part_dashboard.dart';
+import 'trackPartUsage.dart';
 
 class Procurement extends StatefulWidget {
   const Procurement({super.key});
@@ -148,7 +149,13 @@ class _ProcurementState extends State<Procurement> {
             // Navigation buttons
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TrackPartUsage(),
+                  ),
+                );              },
               child: const Text('Track Part Usage'),
             ),
             const SizedBox(height: 20),
