@@ -5,6 +5,8 @@ class VehicleService {
   FirebaseFirestore.instance.collection('vehicles');
 
   Future<void> addVehicle({
+    required String customerId,
+    required String vehicle_id,
     required String plateNumber,
     required String type,
     required String model,
@@ -12,6 +14,8 @@ class VehicleService {
     required int size,
   }) async {
     await vehicles.add({
+      'vehicle_id' : vehicle_id,
+      'customerId' : customerId,
       'plateNumber': plateNumber,
       'type': type,
       'model': model,

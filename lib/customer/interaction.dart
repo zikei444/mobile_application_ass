@@ -32,7 +32,7 @@ class InteractionPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Customer Info
+                // ===== Customer Info =====
                 Card(
                   child: ListTile(
                     title: Text(customerData['name'] ?? ''),
@@ -48,19 +48,23 @@ class InteractionPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // Car Info
-                FutureBuilder<DocumentSnapshot>(
+                // ===== Vehicle Info (NEW: query by customerId) =====
+                FutureBuilder<QuerySnapshot>(
                   future: firestore
-                      .collection("cars")
-                      .doc(customerData['carId'])
+                      .collection("vehicles")
+                      .where("customerId", isEqualTo: customerId)
+                      .limit(1)
                       .get(),
-                  builder: (context, carSnapshot) {
-                    if (!carSnapshot.hasData) {
+                  builder: (context, vehicleSnap) {
+                    if (!vehicleSnap.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
+                    if (vehicleSnap.data!.docs.isEmpty) {
+                      return const Text("No vehicle found.");
+                    }
 
-                    final carData =
-                    carSnapshot.data!.data() as Map<String, dynamic>;
+                    final carData = vehicleSnap.data!.docs.first.data()
+                    as Map<String, dynamic>;
 
                     return Card(
                       child: ListTile(
@@ -68,10 +72,10 @@ class InteractionPage extends StatelessWidget {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Brand: ${carData['brand'] ?? ''}"),
+                            Text("Type: ${carData['type'] ?? ''}"),
                             Text("Model: ${carData['model'] ?? ''}"),
-                            Text("Year: ${carData['year'] ?? ''}"),
-                            Text("Color: ${carData['color'] ?? ''}"),
+                            Text("Kilometer: ${carData['kilometer'] ?? ''}"),
+                            Text("Size: ${carData['size'] ?? ''}"),
                           ],
                         ),
                       ),
@@ -86,7 +90,7 @@ class InteractionPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // All Appointments
+                // ===== Appointments Stream =====
                 StreamBuilder<QuerySnapshot>(
                   stream: firestore
                       .collection("appointments")
@@ -96,13 +100,11 @@ class InteractionPage extends StatelessWidget {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
-
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                       return const Text("No appointments found.");
                     }
 
                     final appointments = snapshot.data!.docs;
-
                     return Column(
                       children: appointments.map((doc) {
                         final appointmentData =
@@ -111,10 +113,7 @@ class InteractionPage extends StatelessWidget {
                         final status =
                         (appointmentData['status'] ?? 'In Progress')
                             .toString();
-
-                        final clickable = true;
-
-                        String formattedDate =
+                        final formattedDate =
                         appointmentData['date'] is Timestamp
                             ? DateFormat('yyyy-MM-dd – kk:mm').format(
                             (appointmentData['date'] as Timestamp)
@@ -125,16 +124,14 @@ class InteractionPage extends StatelessWidget {
                           child: ListTile(
                             title: Text("Appointment ID: $appointmentId"),
                             subtitle: Text("Date: $formattedDate"),
-                            // ✅ Vertically centered status chip
                             trailing: SizedBox(
                               width: 110,
                               height: 40,
-                              child: Center(          // <-- Center vertically & horizontally
+                              child: Center(
                                 child: Chip(
                                   label: Text(
                                     status,
-                                    style:
-                                    const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   backgroundColor:
                                   status.toLowerCase() == "completed"
@@ -145,8 +142,7 @@ class InteractionPage extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            onTap: clickable
-                                ? () {
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -157,8 +153,7 @@ class InteractionPage extends StatelessWidget {
                                   ),
                                 ),
                               );
-                            }
-                                : null,
+                            },
                           ),
                         );
                       }).toList(),
@@ -191,7 +186,7 @@ class AppointmentDetailPage extends StatelessWidget {
     final firestore = FirebaseFirestore.instance;
     final status = (appointmentData['status'] ?? 'In Progress').toString();
 
-    String formattedDate = appointmentData['date'] is Timestamp
+    final formattedDate = appointmentData['date'] is Timestamp
         ? DateFormat('yyyy-MM-dd – kk:mm')
         .format((appointmentData['date'] as Timestamp).toDate())
         : appointmentData['date'] ?? '';
@@ -204,7 +199,8 @@ class AppointmentDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Appointment ID: $appointmentId",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                style:
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text("Service Type: ${appointmentData['serviceType'] ?? ''}"),
             const SizedBox(height: 8),
@@ -227,7 +223,7 @@ class AppointmentDetailPage extends StatelessWidget {
   List<Widget> _buildActionButtons(
       BuildContext context, FirebaseFirestore firestore, String status) {
     final lowerStatus = status.toLowerCase();
-    final List<Widget> buttons = [];
+    final buttons = <Widget>[];
 
     Future<void> updateStatus(String newStatus) async {
       await firestore
