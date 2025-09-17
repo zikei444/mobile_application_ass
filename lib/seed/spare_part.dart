@@ -1,15 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 String getStockLevel(int quantity) {
-  if (quantity >= 200) {
-    return 'maximum';
-  } else if (quantity >= 150) {
-    return 'average';
-  } else if (quantity >= 70) {
-    return 'minimum';
-  } else {
-    return 'danger';
-  }
+  if (quantity >= 200) return 'maximum';
+  if (quantity >= 150) return 'average';
+  if (quantity >= 70) return 'minimum';
+  return 'danger';
 }
 
 Future<void> seedSpareParts() async {
@@ -24,7 +19,7 @@ Future<void> seedSpareParts() async {
       'cost': 80.0,
       'price': 120.0,
       'supplier': 'Auto Supply Co.',
-      'lastRestock': Timestamp.fromDate(DateTime(2024, 8, 1, 10, 30)),
+      'lastRestock': Timestamp.fromDate(DateTime(2024, 8, 5, 10, 30, 15)),
     },
     {
       'id': 'P02',
@@ -34,7 +29,7 @@ Future<void> seedSpareParts() async {
       'cost': 20.0,
       'price': 35.0,
       'supplier': 'Filter World',
-      'lastRestock': Timestamp.fromDate(DateTime(2024, 7, 15, 14, 15)),
+      'lastRestock': Timestamp.fromDate(DateTime(2024, 7, 20, 14, 15, 45)),
     },
     {
       'id': 'P03',
@@ -44,7 +39,7 @@ Future<void> seedSpareParts() async {
       'cost': 10.0,
       'price': 18.0,
       'supplier': 'IgnitePro',
-      'lastRestock': Timestamp.fromDate(DateTime(2024, 6, 20, 9, 45)),
+      'lastRestock': Timestamp.fromDate(DateTime(2024, 6, 22, 9, 50, 0)),
     },
     {
       'id': 'P04',
@@ -54,7 +49,7 @@ Future<void> seedSpareParts() async {
       'cost': 25.0,
       'price': 40.0,
       'supplier': 'Filter World',
-      'lastRestock': Timestamp.fromDate(DateTime(2024, 8, 10, 16, 5)),
+      'lastRestock': Timestamp.fromDate(DateTime(2024, 8, 12, 16, 10, 20)),
     },
     {
       'id': 'P05',
@@ -64,19 +59,19 @@ Future<void> seedSpareParts() async {
       'cost': 250.0,
       'price': 350.0,
       'supplier': 'Battery Hub',
-      'lastRestock': Timestamp.fromDate(DateTime(2024, 5, 5, 11, 20)),
+      'lastRestock': Timestamp.fromDate(DateTime(2024, 5, 10, 11, 20, 30)),
     },
   ];
 
   final batch = firestore.batch();
   for (var part in spareParts) {
     final ref = firestore.collection('spare_parts').doc(part['id'] as String);
-    final updatedPart = {
+    batch.set(ref, {
       ...part,
       'level': getStockLevel(part['quantity'] as int),
-    };
-    batch.set(ref, updatedPart);
+      'unitCost': part['cost'],
+    });
   }
+
   await batch.commit();
-  print("Spare parts seed");
 }

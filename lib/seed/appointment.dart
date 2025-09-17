@@ -46,10 +46,10 @@ Future<void> seedAppointments() async {
 
   List<Map<String, dynamic>> appointments = [];
 
-  for (int i = 1; i <= 50; i++) {
+  for (int i = 1; i <= 15; i++) {
     String appointmentId = 'A${i.toString().padLeft(3, '0')}';
     String customerId = 'C${(random.nextInt(10) + 1).toString().padLeft(2, '0')}';
-    String carId = 'V${(random.nextInt(10) + 1).toString().padLeft(3, '0')}';
+    String vehicleId = 'V${(random.nextInt(10) + 1).toString().padLeft(3, '0')}';
     String serviceType = serviceTypes[random.nextInt(serviceTypes.length)];
     String status = statuses[random.nextInt(statuses.length)];
 
@@ -64,7 +64,7 @@ Future<void> seedAppointments() async {
     appointments.add({
       'id': appointmentId,
       'customerId': customerId,
-      'carId': carId,
+      'vehicleId': vehicleId,
       'date': Timestamp.fromDate(randomDate),
       'serviceType': serviceType,
       'status': status,

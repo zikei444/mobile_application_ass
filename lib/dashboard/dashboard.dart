@@ -5,45 +5,37 @@ import '../vehicle/vehicle_list.dart';
 import '../workScheduler/schedule.dart';
 import '../sparePart/spare_part_dashboard.dart';
 import '../customer/customerList.dart';
-import '../widgets/base_page.dart';
+
 
 class Dashboard extends StatefulWidget {
-  final String userEmail; // passed from login
+  final String userEmail; // pass the email from login
   const Dashboard({super.key, required this.userEmail});
 
   @override
   _DashboardState createState() => _DashboardState();
 }
 
-class _DashboardState extends State<Dashboard> {
-  int vehicleCount = 0;
-  int customerCount = 0;
-  int staffCount = 0;
-  int sparePartCount = 0;
 
-  Map<String, Map<String, dynamic>> staffMap = {}; // cache staff data
+class _DashboardState extends State<Dashboard> {
+  int vehicleCount = 3;   // later fetch from database
+  int customerCount = 5;  // later fetch from database
+  int staffCount = 2;     // later fetch from database
+  int sparePartCount = 7; // later fetch from database
 
   final List<Map<String, dynamic>> dashboardItems = [];
-
-  final Map<String, Color> roleColors = {
-    'Cashier': Colors.green,
-    'Mechanic': Colors.blue,
-    'Admin': Colors.orange,
-  };
 
   @override
   void initState() {
     super.initState();
-    _loadCounts();
-    _loadStaff();
+    _loadStaffCount();
 
-    // Dashboard buttons
+    // Initialize dashboard buttons
     dashboardItems.addAll([
       {
         'label': 'Vehicles',
         'icon': Icons.directions_car,
         'count': () => vehicleCount,
-        'page': const VehicleListPage(),
+        'page': VehicleListPage(),
       },
       {
         'label': 'Customers',
@@ -61,56 +53,85 @@ class _DashboardState extends State<Dashboard> {
         'label': 'Spare Parts',
         'icon': Icons.build,
         'count': () => sparePartCount,
-        'page': const SparePartDashboard(),
+        'page': SparePartDashboard(),
       },
     ]);
   }
 
-  /// 🔹 Load counts using aggregate queries
-  Future<void> _loadCounts() async {
-    final staffCountQuery =
-    await FirebaseFirestore.instance.collection('staff').count().get();
-    final vehicleCountQuery =
-    await FirebaseFirestore.instance.collection('vehicles').count().get();
-    final customerCountQuery =
-    await FirebaseFirestore.instance.collection('customers').count().get();
-    final sparePartCountQuery =
-    await FirebaseFirestore.instance.collection('spareParts').count().get();
-
+  Future<void> _loadStaffCount() async {
+    final snap = await FirebaseFirestore.instance.collection('staff').get();
     setState(() {
-      staffCount = staffCountQuery.count!;
-      vehicleCount = vehicleCountQuery.count!;
-      customerCount = customerCountQuery.count!;
-      sparePartCount = sparePartCountQuery.count!;
-    });
-  }
-
-  /// 🔹 Preload staff into a map
-  Future<void> _loadStaff() async {
-    final staffSnap =
-    await FirebaseFirestore.instance.collection('staff').get();
-    setState(() {
-      staffMap = {
-        for (var s in staffSnap.docs) s.id: s.data() as Map<String, dynamic>
-      };
+      staffCount = snap.size; // total staff
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final todayStart =
-    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+
+    // today day start and end
+    final todayStart = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     final todayEnd = todayStart.add(const Duration(days: 1));
 
-    return BasePage(
-      title: "Dashboard",
-      child: Column(
+    final Map<String, Color> roleColors = {
+      'Cashier': Colors.green,
+      'Mechanic': Colors.blue,
+    };
+    return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: const Text("Welcome!"),
+              accountEmail: Text(widget.userEmail),
+              currentAccountPicture: CircleAvatar(
+                child: Text(widget.userEmail[0].toUpperCase()),
+              ),
+              decoration: const BoxDecoration(color: Colors.blue),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Home'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.directions_car),
+              title: const Text('Vehicles'),
+              onTap: () {
+                Navigator.pushNamed(context, '/vehicles');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () async {
+                await AuthService().signout(context);
+              },
+            ),
+          ],
+        ),
+      ),
+      appBar: AppBar(
+        title: const Text("HOME"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                widget.userEmail,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ),
+          )
+        ],
+      ),
+      body: Column(
         children: [
-          // --- Top Dashboard (grid of buttons) ---
+          // --- Top Dashboard (grid of 4 buttons) ---
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: GridView.builder(
-              shrinkWrap: true,
+              shrinkWrap: true, // important for Column
               physics: const NeverScrollableScrollPhysics(),
               itemCount: dashboardItems.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -126,10 +147,12 @@ class _DashboardState extends State<Dashboard> {
                     padding: const EdgeInsets.all(16),
                   ),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => item['page']),
-                    );
+                    if (item['page'] != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => item['page']),
+                      );
+                    }
                   },
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -138,11 +161,23 @@ class _DashboardState extends State<Dashboard> {
                       const SizedBox(height: 10),
                       Text(
                         item['label'],
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
-                      Text(
+                      item['label'] == 'Schedules'
+                          ? StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance.collection('staff').snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Text("Total Staff: ...",
+                                style: TextStyle(fontSize: 14));
+                          }
+                          final staffCount = snapshot.data!.size;
+                          return Text("Total Staff: $staffCount",
+                              style: const TextStyle(fontSize: 14));
+                        },
+                      )
+                          : Text(
                         "Total: ${item['count']()}",
                         style: const TextStyle(fontSize: 14),
                       ),
@@ -153,15 +188,14 @@ class _DashboardState extends State<Dashboard> {
             ),
           ),
 
-          // --- Job Schedules for Today ---
+          // --- Job Schedules for Today section ---
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text("Job Schedules for Today",
-                    style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -178,8 +212,7 @@ class _DashboardState extends State<Dashboard> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('schedules')
-                  .where('date',
-                  isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart))
+                  .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart))
                   .where('date', isLessThan: Timestamp.fromDate(todayEnd))
                   .snapshots(),
               builder: (context, snap) {
@@ -194,41 +227,51 @@ class _DashboardState extends State<Dashboard> {
                   return const Center(child: Text('No schedules today'));
                 }
 
-                // sort schedules by role
-                final sortedDocs = [...docs];
-                sortedDocs.sort((a, b) {
-                  final ra = staffMap[a['staffId']]?['role'] ?? '';
-                  final rb = staffMap[b['staffId']]?['role'] ?? '';
-                  return ra.compareTo(rb);
-                });
+                return FutureBuilder<QuerySnapshot>(
+                  future: FirebaseFirestore.instance.collection('staff').get(),
+                  builder: (context, staffSnap) {
+                    if (!staffSnap.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final staffMap = {
+                      for (var s in staffSnap.data!.docs) s.id: s.data() as Map<String, dynamic>
+                    };
 
-                return ListView.builder(
-                  itemCount: sortedDocs.length,
-                  itemBuilder: (context, i) {
-                    final d = sortedDocs[i].data() as Map<String, dynamic>;
-                    final staffId = d['staffId'] ?? '';
-                    final startTime = d['shiftStart'] ?? '';
-                    final endTime = d['shiftEnd'] ?? '';
+                    final sortedDocs = [...docs];
+                    sortedDocs.sort((a, b) {
+                      final ra = staffMap[a['staffId']]?['role'] ?? '';
+                      final rb = staffMap[b['staffId']]?['role'] ?? '';
+                      return ra.compareTo(rb);
+                    });
 
-                    final staffData = staffMap[staffId];
-                    final name = staffData?['name'] ?? staffId;
-                    final role = staffData?['role'] ?? '';
-                    final color = roleColors[role] ?? Colors.grey;
+                    return ListView.builder(
+                      itemCount: sortedDocs.length,
+                      itemBuilder: (context, i) {
+                        final d = sortedDocs[i].data() as Map<String, dynamic>;
+                        final staffId = d['staffId'] ?? '';
+                        final startTime = d['shiftStart'] ?? '';
+                        final endTime = d['shiftEnd'] ?? '';
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 6),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: color.withOpacity(0.2),
-                          child: Icon(Icons.person, color: color),
-                        ),
-                        title: Text(
-                          name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text('$role • Shift: $startTime – $endTime'),
-                      ),
+                        final staffData = staffMap[staffId];
+                        final name = staffData?['name'] ?? staffId;
+                        final role = staffData?['role'] ?? '';
+                        final color = roleColors[role] ?? Colors.grey;
+
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: color.withOpacity(0.2),
+                              child: Icon(Icons.person, color: color),
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text('$role • Shift: $startTime – $endTime'),
+                          ),
+                        );
+                      },
                     );
                   },
                 );

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String customerId;
+  final String customerId; // This should match 'id' in customers collection
 
   const ProfilePage({super.key, required this.customerId});
 
@@ -12,51 +12,55 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  DateTime selectedDate = DateTime.now();
 
   Future<Map<String, dynamic>?> _fetchCustomerData() async {
+    // ===== Fetch customer document =====
     final customerSnap = await FirebaseFirestore.instance
         .collection('customers')
         .doc(widget.customerId)
         .get();
-
     if (!customerSnap.exists) return null;
 
     final customer = customerSnap.data()!;
 
-    // Fetch car details
-    final carSnap = await FirebaseFirestore.instance
-        .collection('cars')
-        .doc(customer['carId'])
+    // ===== Fetch all vehicles for this customer =====
+    final vehicleQuery = await FirebaseFirestore.instance
+        .collection('vehicles')
+        .where('customerId', isEqualTo: widget.customerId)
         .get();
-    final car = carSnap.data();
 
-    // Fetch appointments
+    final vehicles = vehicleQuery.docs.map((doc) => doc.data()).toList();
+
+    // ===== Fetch all appointments for this customer =====
     final appointmentSnap = await FirebaseFirestore.instance
         .collection('appointments')
         .where('customerId', isEqualTo: widget.customerId)
         .get();
-    final appointments = appointmentSnap.docs.map((e) => e.data()).toList();
+
+    final appointments = appointmentSnap.docs
+        .map((e) => e.data())
+        .toList()
+      ..sort((a, b) {
+        final da = a['date'] as Timestamp?;
+        final db = b['date'] as Timestamp?;
+        return db?.compareTo(da ?? Timestamp.now()) ?? 0;
+      });
+
+    // ===== Determine last serviced date from latest completed appointment =====
+    DateTime? lastServiced;
+    final completedAppointments = appointments.where((a) =>
+    (a['status']?.toString().toLowerCase() ?? '') == 'completed'
+    ).toList();
+    if (completedAppointments.isNotEmpty) {
+      lastServiced = (completedAppointments.first['date'] as Timestamp).toDate();
+    }
 
     return {
       'customer': customer,
-      'car': car,
+      'vehicles': vehicles,
       'appointments': appointments,
+      'lastServiced': lastServiced,
     };
-  }
-
-  /// Calendar widget
-  Widget _buildCalendar() {
-    return CalendarDatePicker(
-      initialDate: selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      onDateChanged: (date) {
-        setState(() {
-          selectedDate = date;
-        });
-      },
-    );
   }
 
   @override
@@ -77,23 +81,21 @@ class _ProfilePageState extends State<ProfilePage> {
 
           final data = snapshot.data!;
           final customer = data['customer'] as Map<String, dynamic>;
-          final car = data['car'] as Map<String, dynamic>?;
+          final vehicles = data['vehicles'] as List;
           final appointments = data['appointments'] as List;
+          final lastServiced = data['lastServiced'] as DateTime?;
 
-          int totalAppointmentsYear = appointments.length;
-          int totalAppointmentsMonth = appointments
+          // Appointment counts
+          final totalAppointmentsYear = appointments.length;
+          final totalAppointmentsMonth = appointments
               .where((a) =>
-          (a['date'] as Timestamp).toDate().month ==
-              DateTime.now().month)
+          (a['date'] as Timestamp?)?.toDate().month == DateTime.now().month)
               .length;
 
-          // Format last serviced date
-          String lastServicedStr = "N/A";
-          if (customer['lastServiced'] != null &&
-              customer['lastServiced'] is Timestamp) {
-            DateTime dt = (customer['lastServiced'] as Timestamp).toDate();
-            lastServicedStr = DateFormat.yMMMMd().add_jm().format(dt);
-          }
+          // Last serviced date formatting
+          String lastServicedStr = lastServiced != null
+              ? DateFormat.yMMMMd().add_jm().format(lastServiced)
+              : "N/A";
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -118,7 +120,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${customer['id']} - ${customer['name']}",
+                              "${widget.customerId} - ${customer['name'] ?? 'No Name'}",
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 18),
                             ),
@@ -133,10 +135,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // ===== Calendar =====
-                _buildCalendar(),
                 const SizedBox(height: 20),
 
                 // ===== Appointment Summary =====
@@ -161,72 +159,93 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
 
-                // ===== Car Info =====
-                if (car != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Car Information",
+                const SizedBox(height: 20),
+                // ===== Vehicles Info =====
+                if (vehicles.isNotEmpty)
+                  ...vehicles.map((vehicle) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Vehicle Information",
                             style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        Text("Plate Number: ${car['plateNumber']}"),
-                        Text("Type: ${car['brand']}"),
-                        Text("Model: ${car['model']}"),
-                        Text("Year: ${car['year']}"),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 20),
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          Text("Vehicle ID: ${vehicle['vehicle_id'] ?? 'N/A'}"),
+                          Text("Plate Number: ${vehicle['plateNumber'] ?? 'N/A'}"),
+                          Text("Type: ${vehicle['type'] ?? 'N/A'}"),
+                          Text("Model: ${vehicle['model'] ?? 'N/A'}"),
+                          Text("Kilometer: ${vehicle['kilometer'] ?? 'N/A'}"),
+                          Text("Size: ${vehicle['size'] ?? 'N/A'}"),
+                          Text(
+                            "Created At: ${vehicle['createdAt'] is Timestamp ? DateFormat.yMMMd().add_jm().format((vehicle['createdAt'] as Timestamp).toDate()) : 'N/A'}",
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
 
-                // ===== Service History =====
+                // ===== Appointment History =====
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Service History",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    ...appointments.map((a) {
-                      DateTime d = (a['date'] as Timestamp).toDate();
-                      return Card(
-                        child: ListTile(
-                          title: Text("ID: ${a['id']}"),
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("Service Details"),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                        "Service Type: ${a['serviceType'] ?? 'Unknown'}"),
-                                    Text(
-                                        "Date: ${d.day}/${d.month}/${d.year}"),
-                                    Text("Status: ${a['status'] ?? 'N/A'}"),
-                                    Text("Notes: ${a['notes'] ?? 'N/A'}"),
+                    const Text("Appointment History",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    if (appointments.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text("No appointments found for this customer."),
+                      )
+                    else
+                      ...appointments.map((a) {
+                        final Timestamp? ts = a['date'] as Timestamp?;
+                        DateTime d = ts?.toDate() ?? DateTime.now();
+
+                        return Card(
+                          child: ListTile(
+                            title: Text("ID: ${a['id'] ?? 'N/A'}"),
+                            subtitle: Text(
+                                "Vehicle: ${a['vehicleId'] ?? 'N/A'}\nService: ${a['serviceType'] ?? 'N/A'}\nStatus: ${a['status'] ?? 'N/A'}"),
+                            isThreeLine: true,
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text("Service Details"),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("ID: ${a['id'] ?? 'N/A'}"),
+                                      Text("Vehicle ID: ${a['vehicleId'] ?? 'N/A'}"),
+                                      Text("Service Type: ${a['serviceType'] ?? 'N/A'}"),
+                                      Text("Date: ${DateFormat.yMMMMd().add_jm().format(d)}"),
+                                      Text("Status: ${a['status'] ?? 'N/A'}"),
+                                      Text("Notes: ${a['notes'] ?? 'N/A'}"),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text("Close"),
+                                    )
                                   ],
                                 ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text("Close"),
-                                  )
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    }),
+                              );
+                            },
+                          ),
+                        );
+                      }),
                   ],
                 ),
               ],
