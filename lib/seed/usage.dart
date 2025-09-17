@@ -1,43 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:math';
+import 'package:flutter/material.dart';
 
 Future<void> seedSparePartUsage() async {
   final firestore = FirebaseFirestore.instance;
-  final random = Random();
 
-  // Spare parts IDs
-  final sparePartIds = ['P01', 'P02', 'P03', 'P04', 'P05'];
+  final invoiceSnap = await firestore.collection('invoice').get();
+  final invoices = invoiceSnap.docs;
 
-  // Number of usage records to create
-  const int totalRecords = 20;
+  int usageCounter = 1;
 
-  for (int i = 0; i < totalRecords; i++) {
-    // Auto-increment ID: U001, U002, ...
-    final id = 'U${(i + 1).toString().padLeft(3, '0')}';
+  // Generate track part usage record based on invoice created
 
-    // Randomly select spare part
-    final sparePartId = sparePartIds[random.nextInt(sparePartIds.length)];
+  for (var inv in invoices) {
+    final invoiceData = inv.data();
+    final invoiceId = invoiceData['invoice_id'] ?? '';
+    final createdDate = invoiceData['created_date'] as Timestamp? ?? Timestamp.now();
+    final parts = (invoiceData['parts'] as List<dynamic>? ?? []);
 
-    // Random usage quantity
-    final quantity = random.nextInt(20) + 1; // 1 to 20
+    for (var p in parts) {
+      final part = p as Map<String, dynamic>;
+      final sparePartId = part['part_id'] ?? '';
+      final quantity = part['quantity'] ?? 0;
 
-    // Create usage record
-    await firestore.collection('spare_part_usage').doc(id).set({
-      'id': id,
-      'spare_part_id': sparePartId,
-      'quantity': quantity,
-      'usedAt': Timestamp.fromDate(
-        DateTime.now().subtract(Duration(days: random.nextInt(30))), // random date in past month
-      ),
-    });
+      final usageId = "U${usageCounter.toString().padLeft(3, '0')}";
 
-    print('Created usage: $id, spare_part_id: $sparePartId, quantity: $quantity');
+      await firestore.collection('spare_part_usage').doc(usageId).set({
+        "id": usageId,
+        "invoice_id": invoiceId,
+        "spare_part_id": sparePartId,
+        "quantity": quantity,
+        "usedAt": createdDate, // use invoice created date
+      });
+
+      usageCounter++;
+    }
   }
 
-  print('Spare part usage seeding completed!');
+  print("Spare part usage seeding completed: $usageCounter records created.");
 }
 
-// Call this in main() or a script
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await seedSparePartUsage();
 }

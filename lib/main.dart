@@ -33,7 +33,7 @@ void main() async {
   //  await seedSpareParts();
   //  await seedProcurements();
   //  await seedAppointments();
-  //   await seedSparePartUsage();
+  //await seedSparePartUsage();
   //await seedCars();
   // await seedInvoices();
 

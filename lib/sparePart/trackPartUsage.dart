@@ -48,6 +48,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
         child: DataTable(
           columns: const [
             DataColumn(label: Text("Usage ID")),
+            DataColumn(label: Text("Invoice ID")),
             DataColumn(label: Text("Spare Part ID")),
             DataColumn(label: Text("Spare Part Name")),
             DataColumn(label: Text("Quantity Used")),
@@ -57,11 +58,13 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
             final usageData = usageDoc.data() as Map<String, dynamic>;
             final sparePartId = usageData['spare_part_id'] ?? '';
             final usageId = usageData['id'] ?? '';
+            final invoiceId = usageData['invoice_id'] ?? '';
             final quantity = usageData['quantity'] ?? 0;
             final usedAt = (usageData['usedAt'] as Timestamp).toDate();
 
             return DataRow(cells: [
               DataCell(Text(usageId)),
+              DataCell(Text(invoiceId)),
               DataCell(Text(sparePartId)),
               DataCell(FutureBuilder<Map<String, dynamic>?>(
                 future: getSparePartInfo(sparePartId),
@@ -123,8 +126,8 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: showCalendar
-                    ? "Search by usage ID, spare part ID or name"
-                    : "Search by spare part ID or name",
+                    ? "Search by usage ID, invoice ID, spare part ID or name"
+                    : "Search by invoice ID, spare part ID or name",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -176,11 +179,14 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                         final usage = doc.data() as Map<String, dynamic>;
                         final usageId =
                         (usage['id'] ?? '').toString().toLowerCase();
+                        final invoiceId =
+                        (usage['invoice_id'] ?? '').toString().toLowerCase();
                         final sparePartId =
                         (usage['spare_part_id'] ?? '').toString().toLowerCase();
                         final sparePartName =
                         (usage['spare_part_name'] ?? '').toString().toLowerCase();
                         return usageId.contains(searchQuery) ||
+                            invoiceId.contains(searchQuery) ||
                             sparePartId.contains(searchQuery) ||
                             sparePartName.contains(searchQuery);
                       }).toList();
@@ -190,11 +196,14 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                     if (searchQuery.isNotEmpty) {
                       filteredDocs = filteredDocs.where((doc) {
                         final usage = doc.data() as Map<String, dynamic>;
+                        final invoiceId =
+                        (usage['invoice_id'] ?? '').toString().toLowerCase();
                         final sparePartId =
                         (usage['spare_part_id'] ?? '').toString().toLowerCase();
                         final sparePartName =
                         (usage['spare_part_name'] ?? '').toString().toLowerCase();
-                        return sparePartId.contains(searchQuery) ||
+                        return invoiceId.contains(searchQuery) ||
+                            sparePartId.contains(searchQuery) ||
                             sparePartName.contains(searchQuery);
                       }).toList();
                     }

@@ -13,7 +13,8 @@ class Procurement extends StatefulWidget {
 class _ProcurementState extends State<Procurement> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Map<String, dynamic>> _parts = [];
-  String _searchText = '';
+  String _searchParts = '';
+  String _searchProcurement = '';
 
   @override
   void initState() {
@@ -43,21 +44,11 @@ class _ProcurementState extends State<Procurement> {
 
   Future<void> _loadParts() async {
     QuerySnapshot snapshot = await _firestore.collection('spare_parts').get();
-
     List<Map<String, dynamic>> parts = snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
       data['docId'] = doc.id;
       return data;
     }).toList();
-
-    if (_searchText.isNotEmpty) {
-      final query = _searchText.toLowerCase();
-      parts = parts.where((p) {
-        return (p['id'] ?? '').toLowerCase().contains(query) ||
-            (p['name'] ?? '').toLowerCase().contains(query) ||
-            (p['category'] ?? '').toLowerCase().contains(query);
-      }).toList();
-    }
 
     setState(() {
       _parts = parts;
@@ -108,7 +99,6 @@ class _ProcurementState extends State<Procurement> {
     }
   }
 
-  /// Create a new procurement ID
   Future<String> _generateProcurementId() async {
     final snapshot = await _firestore
         .collection('procurements')
@@ -140,7 +130,7 @@ class _ProcurementState extends State<Procurement> {
 
       // Create procurement record
       final newId = await _generateProcurementId();
-      final double unitCost = (part['unitCost'] ?? 0.0) * 1.0; // ensure double
+      final double unitCost = (part['unitCost'] ?? 0.0) * 1.0;
       await _firestore.collection('procurements').doc(newId).set({
         'id': newId,
         'item': part['name'] ?? '',
@@ -165,7 +155,7 @@ class _ProcurementState extends State<Procurement> {
     final level = (part['level'] ?? '').toString().toLowerCase();
     if (level == 'maximum') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('The stock reached maximum quantity !')),
+        const SnackBar(content: Text('The stock reached maximum quantity!')),
       );
     } else {
       _showOrderDialog(part);
@@ -178,140 +168,161 @@ class _ProcurementState extends State<Procurement> {
       appBar: AppBar(title: const Text('Spare Parts Control')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ---------------- Procurement Request -----------------
-              const Text(
-                'Procurement Request',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        child: ListView(
+          children: [
+            // ---------------- Procurement Request -----------------
+            const Text(
+              'Procurement Request',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search by ID / Name / Category',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: const InputDecoration(
-                  hintText: 'Search by ID / Name / Category',
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchText = value;
-                    _loadParts();
-                  });
-                },
-              ),
-              const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: DataTable(
-                  columns: const [
-                    DataColumn(label: Text('Spare_Parts ID')),
-                    DataColumn(label: Text('Name')),
-                    DataColumn(label: Text('Supplier')),
-                    DataColumn(label: Text('Stock')),
-                    DataColumn(label: Text('Order')),
-                  ],
-                  rows: _parts.map((part) {
-                    final level = (part['level'] ?? '').toString().toLowerCase();
-                    return DataRow(cells: [
-                      DataCell(Text(part['id'] ?? '')),
-                      DataCell(Text(part['name'] ?? '')),
-                      DataCell(Text(part['supplier'] ?? '')),
-                      DataCell(Text(part['quantity']?.toString() ?? '0')),
-                      DataCell(
-                        SizedBox(
-                          width: 80,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _getLevelColor(level),
-                            ),
-                            onPressed: () => _handleOrderButton(part),
-                            child: const Text('Order', textAlign: TextAlign.center),
+              onChanged: (value) {
+                setState(() {
+                  _searchParts = value;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('Spare_Parts ID')),
+                  DataColumn(label: Text('Name')),
+                  DataColumn(label: Text('Supplier')),
+                  DataColumn(label: Text('Stock')),
+                  DataColumn(label: Text('Order')),
+                ],
+                rows: _parts
+                    .where((part) {
+                  final query = _searchParts.toLowerCase();
+                  return (part['id'] ?? '').toLowerCase().contains(query) ||
+                      (part['name'] ?? '').toLowerCase().contains(query) ||
+                      (part['category'] ?? '').toLowerCase().contains(query);
+                })
+                    .map((part) {
+                  final level = (part['level'] ?? '').toString().toLowerCase();
+                  return DataRow(cells: [
+                    DataCell(Text(part['id'] ?? '')),
+                    DataCell(Text(part['name'] ?? '')),
+                    DataCell(Text(part['supplier'] ?? '')),
+                    DataCell(Text(part['quantity']?.toString() ?? '0')),
+                    DataCell(
+                      SizedBox(
+                        width: 80,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _getLevelColor(level),
                           ),
+                          onPressed: () => _handleOrderButton(part),
+                          child: const Text('Order', textAlign: TextAlign.center),
                         ),
                       ),
-                    ]);
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // ---------------- Procurement Records -----------------
-              const Text(
-                'Procurement Records',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('procurements')
-                    .orderBy('id', descending: false) // arranged by id
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Text('No procurement records found.');
-                  }
-                  final docs = snapshot.data!.docs;
-                  return SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('ID')),
-                        DataColumn(label: Text('Item')),
-                        DataColumn(label: Text('Quantity')),
-                        DataColumn(label: Text('Total Cost (RM)')),
-                        DataColumn(label: Text('Date Ordered')),
-                      ],
-                      rows: docs.map((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
-                        final date = (data['dateOrdered'] as Timestamp).toDate();
-                        return DataRow(cells: [
-                          DataCell(Text(data['id'] ?? '')),
-                          DataCell(Text(data['item'] ?? '')),
-                          DataCell(Text('${data['quantity']}')),
-                          DataCell(Text('${data['totalCost']}')),
-                          DataCell(Text(
-                            '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
-                                '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
-                          )),
-                        ]);
-                      }).toList(),
                     ),
-                  );
-                },
+                  ]);
+                })
+                    .toList(),
               ),
+            ),
+            const SizedBox(height: 40),
 
-              const SizedBox(height: 40),
+            // ---------------- Procurement Records -----------------
+            const Text(
+              'Procurement Records',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search Procurement Records',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchProcurement = value;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('procurements')
+                  .orderBy('id', descending: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text('No procurement records found.');
+                }
 
-              // ---------------- Navigation Buttons -----------------
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const TrackPartUsage()),
-                  );
-                },
-                child: const Text('Track Part Usage'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SparePartDashboard()),
-                  );
-                },
-                child: const Text('Spare Part Control'),
-              ),
-              const SizedBox(height: 60),
-            ],
-          ),
+                final docs = snapshot.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final query = _searchProcurement.toLowerCase();
+                  return (data['id'] ?? '').toString().toLowerCase().contains(query) ||
+                      (data['item'] ?? '').toString().toLowerCase().contains(query);
+                }).toList();
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('ID')),
+                      DataColumn(label: Text('Item')),
+                      DataColumn(label: Text('Quantity')),
+                      DataColumn(label: Text('Total Cost (RM)')),
+                      DataColumn(label: Text('Date Ordered')),
+                    ],
+                    rows: docs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final date = (data['dateOrdered'] as Timestamp).toDate();
+                      return DataRow(cells: [
+                        DataCell(Text(data['id'] ?? '')),
+                        DataCell(Text(data['item'] ?? '')),
+                        DataCell(Text('${data['quantity']}')),
+                        DataCell(Text('${data['totalCost']}')),
+                        DataCell(Text(
+                          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
+                              '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}',
+                        )),
+                      ]);
+                    }).toList(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 40),
+
+            // ---------------- Navigation Buttons -----------------
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TrackPartUsage()),
+                );
+              },
+              child: const Text('Track Part Usage'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SparePartDashboard()),
+                );
+              },
+              child: const Text('Spare Part Control'),
+            ),
+            const SizedBox(height: 60),
+          ],
         ),
       ),
     );

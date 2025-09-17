@@ -135,48 +135,89 @@ class _CustomerListState extends State<CustomerList> {
                             title: Text(customer['name'] ?? "No Name"),
                             subtitle: Text("Email: ${customer['email'] ?? 'N/A'}\nPhone: ${customer['phone'] ?? 'N/A'}"),
                             isThreeLine: true,
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                            onTap: () async {
-                              await showModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        leading: const Icon(Icons.person),
-                                        title: const Text("View Profile"),
-                                        onTap: () async {
-                                          Navigator.pop(context);
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => ProfilePage(
-                                                customerId: customer.id,
-                                              ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Arrow button for details
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                                  onPressed: () async {
+                                    await showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) {
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ListTile(
+                                              leading: const Icon(Icons.person),
+                                              title: const Text("View Profile"),
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => ProfilePage(
+                                                      customerId: customer.id,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                             ),
-                                          );
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(Icons.chat),
-                                        title: const Text("Manage Interaction"),
-                                        onTap: () async {
-                                          Navigator.pop(context);
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  InteractionPage(customerId: customer.id),
+                                            ListTile(
+                                              leading: const Icon(Icons.chat),
+                                              title: const Text("Manage Interaction"),
+                                              onTap: () async {
+                                                Navigator.pop(context);
+                                                await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        InteractionPage(customerId: customer.id),
+                                                  ),
+                                                );
+                                              },
                                             ),
-                                          );
-                                        },
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                                // Delete button
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () async {
+                                    final confirm = await showDialog<bool>(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text("Delete Customer"),
+                                        content: const Text("Are you sure you want to delete this customer?"),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, false),
+                                            child: const Text("Cancel"),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context, true),
+                                            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
+                                    );
+
+                                    if (confirm == true) {
+                                      await FirebaseFirestore.instance
+                                          .collection('customers')
+                                          .doc(customer.id)
+                                          .delete();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text("Customer deleted")),
+                                      );
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
