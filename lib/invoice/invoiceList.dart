@@ -4,8 +4,16 @@ import 'package:pie_chart/pie_chart.dart';
 import 'add_invoice_page.dart';
 import 'invoice_details.dart';
 
-class InvoiceManagementPage extends StatelessWidget {
+class InvoiceManagementPage extends StatefulWidget {
   const InvoiceManagementPage({super.key});
+
+  @override
+  State<InvoiceManagementPage> createState() => _InvoiceManagementPageState();
+}
+
+class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
+  String _selectedStatus = "All"; // filter
+  String _sortBy = "Date"; // sort option
 
   @override
   Widget build(BuildContext context) {
@@ -17,15 +25,11 @@ class InvoiceManagementPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green, // 背景绿色
-                foregroundColor: Colors.white, // 文字 & 图标白色
-                elevation: 4, // 阴影
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                elevation: 4,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // 圆角
-                  side: const BorderSide(
-                    color: Colors.greenAccent,
-                    width: 1.5,
-                  ), // 边框
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
               onPressed: () {
@@ -63,6 +67,27 @@ class InvoiceManagementPage extends StatelessWidget {
             statusData[status] = (statusData[status] ?? 0) + 1;
             methodData[method] = (methodData[method] ?? 0) + 1;
           }
+
+          // Filter
+          var filteredDocs = docs.where((d) {
+            if (_selectedStatus == "All") return true;
+            return (d['status'] as String?) == _selectedStatus.toLowerCase();
+          }).toList();
+
+          // Sort
+          filteredDocs.sort((a, b) {
+            final da = a.data() as Map<String, dynamic>;
+            final db = b.data() as Map<String, dynamic>;
+            switch (_sortBy) {
+              case "Invoice ID":
+                return da['invoice_id'].toString().compareTo(db['invoice_id'].toString());
+              case "Amount":
+                return (da['total'] as num).compareTo(db['total'] as num);
+              case "Date":
+              default:
+                return db['created_date'].compareTo(da['created_date']); // newest first
+            }
+          });
 
           return Column(
             children: [
@@ -103,12 +128,81 @@ class InvoiceManagementPage extends StatelessWidget {
                 ),
               ),
 
-              // 📋 下半部：invoice 列表
+              // 🔍 Filter + Sort Controls
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Row(
+                  children: [
+                    // Filter Dropdown
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _selectedStatus,
+                        decoration: InputDecoration(
+                          labelText: "Filter by Status",
+                          labelStyle: const TextStyle(color: Colors.grey), // label grey
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green), // default border
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green, width: 2), // green on focus
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green), // green when not focused
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          isDense: true,
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: "All", child: Text("All")),
+                          DropdownMenuItem(value: "Paid", child: Text("Paid")),
+                          DropdownMenuItem(value: "Partial", child: Text("Partial")),
+                          DropdownMenuItem(value: "Unpaid", child: Text("Unpaid")),
+                        ],
+                        onChanged: (val) => setState(() => _selectedStatus = val!),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Sort Dropdown
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: _sortBy,
+                        decoration: InputDecoration(
+                          labelText: "Sort by",
+                          labelStyle: const TextStyle(color: Colors.grey), // label grey
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green), // default border
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green, width: 2), // green on focus
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: Colors.green), // green when not focused
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          isDense: true,
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: "Date", child: Text("Date")),
+                          DropdownMenuItem(value: "Invoice ID", child: Text("Invoice ID")),
+                          DropdownMenuItem(value: "Amount", child: Text("Amount")),
+                        ],
+                        onChanged: (val) => setState(() => _sortBy = val!),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // 📋 Invoice 列表
               Expanded(
                 child: ListView.builder(
-                  itemCount: docs.length,
+                  itemCount: filteredDocs.length,
                   itemBuilder: (ctx, i) {
-                    final data = docs[i].data() as Map<String, dynamic>;
+                    final data = filteredDocs[i].data() as Map<String, dynamic>;
                     return InkWell(
                       onTap: () {
                         Navigator.push(
@@ -148,7 +242,7 @@ class InvoiceManagementPage extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
-                                  "RM${data['total']}",
+                                  "RM${(data['total'] as num).toStringAsFixed(2)}",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,

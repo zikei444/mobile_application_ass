@@ -40,97 +40,230 @@ class _CalendarPageState extends State<CalendarPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
-            return AlertDialog(
-              title: const Text("Add Schedule"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // dropdown: staff list
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Select Staff"),
-                    items: staffMap.entries.map((e) {
-                      final staffId = e.key;
-                      final name = e.value['name'] ?? staffId;
-                      final role = e.value['role'] ?? '';
-                      return DropdownMenuItem(
-                        value: staffId,
-                        child: Text("$name ($role)"),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      setStateDialog(() => selectedStaffId = val);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // pick start time
-                  ElevatedButton(
-                    onPressed: () async {
-                      final t = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (t != null) setStateDialog(() => startTime = t);
-                    },
-                    child: Text(startTime == null
-                        ? "Pick Start Time"
-                        : "Start: ${startTime!.format(context)}"),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // pick end time
-                  ElevatedButton(
-                    onPressed: () async {
-                      final t = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (t != null) setStateDialog(() => endTime = t);
-                    },
-                    child: Text(endTime == null
-                        ? "Pick End Time"
-                        : "End: ${endTime!.format(context)}"),
-                  ),
-                ],
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20), // ✅ rounded corners
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (selectedStaffId != null &&
-                        startTime != null &&
-                        endTime != null) {
-                      final startStr =
-                      startTime!.format(context); // e.g. 09:00 AM
-                      final endStr = endTime!.format(context);
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 40,
+              ), // ✅ bigger dialog
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                // ✅ wider
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      "Add Schedule",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
-                      await FirebaseFirestore.instance
-                          .collection('schedules')
-                          .add({
-                        'staffId': selectedStaffId,
-                        'date': Timestamp.fromDate(_selected),
-                        'shiftStart': startStr,
-                        'shiftEnd': endStr,
-                        'status': 'working',
-                      });
+                    // dropdown: staff list
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        labelText: "Select Staff",
+                        labelStyle: const TextStyle(color: Colors.grey),
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.green, width: 2),
+                        ),
+                      ),
+                      items: staffMap.entries.map((e) {
+                        final staffId = e.key;
+                        final name = e.value['name'] ?? staffId;
+                        final role = e.value['role'] ?? '';
+                        return DropdownMenuItem(
+                          value: staffId,
+                          child: Text("$name ($role)"),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setStateDialog(() => selectedStaffId = val);
+                      },
+                    ),
+                    const SizedBox(height: 16),
 
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: const Text("Add"),
+                    // pick start time
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(45),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.access_time),
+                      onPressed: () async {
+                        final t = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                timePickerTheme: const TimePickerThemeData(
+                                  dialBackgroundColor: Colors.white,
+                                  dialHandColor: Colors.green,
+                                  entryModeIconColor: Colors.green,
+                                  hourMinuteColor: Colors.green,
+                                  hourMinuteTextColor: Colors.white,
+                                ),
+                                colorScheme: ColorScheme.light(
+                                  primary: Colors.green,
+                                  // header, selected time
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black, // unselected text
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (t != null) setStateDialog(() => startTime = t);
+                      },
+                      label: Text(
+                        startTime == null
+                            ? "Pick Start Time"
+                            : "Start: ${startTime!.format(context)}",
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // pick end time
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(45),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.access_time),
+                      onPressed: () async {
+                        final t = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                timePickerTheme: const TimePickerThemeData(
+                                  dialBackgroundColor: Colors.white,
+                                  dialHandColor: Colors.green,
+                                  entryModeIconColor: Colors.green,
+                                  hourMinuteColor: Colors.green,
+                                  hourMinuteTextColor: Colors.white,
+                                ),
+                                colorScheme: ColorScheme.light(
+                                  primary: Colors.green,
+                                  // header, selected time
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black, // unselected text
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (t != null) setStateDialog(() => endTime = t);
+                      },
+                      label: Text(
+                        endTime == null
+                            ? "Pick End Time"
+                            : "End: ${endTime!.format(context)}",
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Action buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (selectedStaffId != null &&
+                                startTime != null &&
+                                endTime != null) {
+                              // convert to minutes for comparison
+                              int startMinutes =
+                                  startTime!.hour * 60 + startTime!.minute;
+                              int endMinutes =
+                                  endTime!.hour * 60 + endTime!.minute;
+
+                              if (endMinutes <= startMinutes) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "End time must be after start time",
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return; // stop execution
+                              }
+
+                              final startStr = startTime!.format(context);
+                              final endStr = endTime!.format(context);
+
+                              await FirebaseFirestore.instance
+                                  .collection('schedules')
+                                  .add({
+                                    'staffId': selectedStaffId,
+                                    'date': Timestamp.fromDate(_selected),
+                                    'shiftStart': startStr,
+                                    'shiftEnd': endStr,
+                                    'status': 'working',
+                                  });
+
+                              Navigator.pop(context);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Please fill all fields"),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text("Add"),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -161,19 +294,37 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
       body: Column(
         children: [
-          // Flutter built-in calendar widget
-          CalendarDatePicker(
-            firstDate: DateTime(2020),
-            lastDate: DateTime(2030),
-            initialDate: _selected,
-            onDateChanged: (d) => setState(() => _selected = d),
+          Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary: Colors.green,
+                // ✅ header background, selected day, etc.
+                onPrimary: Colors.white,
+                // ✅ text on selected day
+                onSurface: Colors.black, // ✅ default text color
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.green, // ✅ buttons like OK/Cancel
+                ),
+              ),
+            ),
+            child: CalendarDatePicker(
+              firstDate: DateTime(2020),
+              lastDate: DateTime(2030),
+              initialDate: _selected,
+              onDateChanged: (d) => setState(() => _selected = d),
+            ),
           ),
           const Divider(),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('schedules')
-                  .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+                  .where(
+                    'date',
+                    isGreaterThanOrEqualTo: Timestamp.fromDate(start),
+                  )
                   .where('date', isLessThan: Timestamp.fromDate(end))
                   .snapshots(),
               builder: (context, snap) {
@@ -202,8 +353,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
                     final d = sortedDocs[i].data() as Map<String, dynamic>;
                     final startTime = d['shiftStart'] ?? '';
-                    final endTime   = d['shiftEnd'] ?? '';
-                    final staffId   = d['staffId'] ?? '';
+                    final endTime = d['shiftEnd'] ?? '';
+                    final staffId = d['staffId'] ?? '';
 
                     // 查 staffMap
                     final staffData = staffMap[staffId];
@@ -216,7 +367,9 @@ class _CalendarPageState extends State<CalendarPage> {
                     return Card(
                       elevation: 3,
                       margin: const EdgeInsets.symmetric(vertical: 6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: ListTile(
                         leading: CircleAvatar(
                           backgroundColor: color.withOpacity(0.2),
@@ -224,7 +377,10 @@ class _CalendarPageState extends State<CalendarPage> {
                         ),
                         title: Text(
                           name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                         subtitle: Text('$role • Shift: $startTime – $endTime'),
                         trailing: const Icon(Icons.chevron_right),
@@ -232,7 +388,8 @@ class _CalendarPageState extends State<CalendarPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => StaffCalendarPage(staffId: staffId),
+                              builder: (_) =>
+                                  StaffCalendarPage(staffId: staffId),
                             ),
                           );
                         },
@@ -247,8 +404,14 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openAddScheduleDialog,
-        label: const Text("Add Schedule"),
+        label: const Text(
+          "Add Schedule",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         icon: const Icon(Icons.add),
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        elevation: 6,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
