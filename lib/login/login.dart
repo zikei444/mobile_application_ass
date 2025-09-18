@@ -52,7 +52,7 @@ class Login extends StatelessWidget {
             children: [
               Center(
                 child: Image.asset(
-                  'assets/logo.jpg',
+                  'assets/images/logo.webp',
                   height: 120,
                 ),
               ),

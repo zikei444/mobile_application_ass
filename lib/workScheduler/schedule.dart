@@ -30,6 +30,7 @@ class _CalendarPageState extends State<CalendarPage> {
     setState(() => staffMap = map);
   }
 
+  // add schedule
   Future<void> _openAddScheduleDialog() async {
     String? selectedStaffId;
     TimeOfDay? startTime;
@@ -42,15 +43,14 @@ class _CalendarPageState extends State<CalendarPage> {
           builder: (context, setStateDialog) {
             return Dialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20), // ✅ rounded corners
+                borderRadius: BorderRadius.circular(20),
               ),
               insetPadding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 40,
-              ), // ✅ bigger dialog
+              ),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
-                // ✅ wider
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -166,9 +166,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                 ),
                                 colorScheme: ColorScheme.light(
                                   primary: Colors.green,
-                                  // header, selected time
                                   onPrimary: Colors.white,
-                                  onSurface: Colors.black, // unselected text
+                                  onSurface: Colors.black,
                                 ),
                               ),
                               child: child!,
@@ -270,7 +269,7 @@ class _CalendarPageState extends State<CalendarPage> {
     // beginning and end of the chosen day
     final start = DateTime(_selected.year, _selected.month, _selected.day);
     final end = start.add(const Duration(days: 1));
-    // role 对应颜色
+    // color for different role
     final Map<String, Color> roleColors = {
       'Cashier': Colors.green,
       'Mechanic': Colors.blue,
@@ -298,14 +297,12 @@ class _CalendarPageState extends State<CalendarPage> {
             data: Theme.of(context).copyWith(
               colorScheme: ColorScheme.light(
                 primary: Colors.green,
-                // ✅ header background, selected day, etc.
                 onPrimary: Colors.white,
-                // ✅ text on selected day
-                onSurface: Colors.black, // ✅ default text color
+                onSurface: Colors.black,
               ),
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.green, // ✅ buttons like OK/Cancel
+                  foregroundColor: Colors.green,
                 ),
               ),
             ),
@@ -343,12 +340,12 @@ class _CalendarPageState extends State<CalendarPage> {
                   padding: const EdgeInsets.all(8),
                   itemCount: docs.length,
                   itemBuilder: (context, i) {
-                    // 先把 docs 转成可排序的 List
+                    // convert to list and sort
                     final sortedDocs = [...docs];
                     sortedDocs.sort((a, b) {
                       final ra = staffMap[a['staffId']]?['role'] ?? '';
                       final rb = staffMap[b['staffId']]?['role'] ?? '';
-                      return ra.compareTo(rb); // 依 role 字母顺序排
+                      return ra.compareTo(rb); // show cashier first
                     });
 
                     final d = sortedDocs[i].data() as Map<String, dynamic>;
@@ -356,12 +353,12 @@ class _CalendarPageState extends State<CalendarPage> {
                     final endTime = d['shiftEnd'] ?? '';
                     final staffId = d['staffId'] ?? '';
 
-                    // 查 staffMap
+                    // check staffMap
                     final staffData = staffMap[staffId];
                     final name = staffData?['name'] ?? staffId;
                     final role = staffData?['role'] ?? '';
 
-                    // role 映射到颜色
+                    // role : color match
                     final color = roleColors[role] ?? Colors.grey;
 
                     return Card(

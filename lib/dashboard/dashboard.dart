@@ -20,7 +20,7 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   int vehicleCount = 0;   // later fetch from database
   int customerCount = 0;  // later fetch from database
-  int scheduleCount = 0;     // later fetch from database
+  int staffCount = 0;     // later fetch from database
   int sparePartCount = 0; // later fetch from database
   String selectedFilter = 'All';
   int completedCount = 0;
@@ -39,15 +39,15 @@ class _DashboardState extends State<Dashboard> {
     await FirebaseFirestore.instance.collection('vehicles').get();
     final customerSnap =
     await FirebaseFirestore.instance.collection('customers').get();
-    final scheduleSnap =
-    await FirebaseFirestore.instance.collection('schedules').get();
+    final staffSnap =
+    await FirebaseFirestore.instance.collection('staff').get();
     final spareSnap =
     await FirebaseFirestore.instance.collection('spareParts').get();
 
     setState(() {
       vehicleCount = vehicleSnap.size;
       customerCount = customerSnap.size;
-      scheduleCount = scheduleSnap.size;
+      staffCount = staffSnap.size;
       sparePartCount = spareSnap.size;
     });
   }
@@ -177,6 +177,7 @@ class _DashboardState extends State<Dashboard> {
       ),
       // FIX: body must be ONE widget → wrap in Column
             // --- Top Dashboard (grid of 4 buttons) ---
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,22 +187,23 @@ class _DashboardState extends State<Dashboard> {
               padding: const EdgeInsets.all(8.0),
               child: GridView.count(
                 crossAxisCount: 2, // 2 cards per row
-                shrinkWrap: true, // ✅ makes GridView take minimum height
-                physics: const NeverScrollableScrollPhysics(), // ✅ disable GridView’s own scroll
-                children: [
-                  _buildDashboardCard(Icons.directions_car, "Vehicles", vehicleCount, () {
+                shrinkWrap: true, // ✅ makes GridView take minimum heig
+                  children: [
+                  _buildDashboardCard(Icons.directions_car, "Vehicles", "$vehicleCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => VehicleListPage()));
                   }),
-                  _buildDashboardCard(Icons.people, "Customers", customerCount, () {
+                  _buildDashboardCard(Icons.people, "Customers", "$customerCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => CustomerList()));
                   }),
-                  _buildDashboardCard(Icons.schedule, "Schedules", scheduleCount, () {
+                  _buildDashboardCard(Icons.schedule, "Schedules", "Total Staff: $staffCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => CalendarPage()));
                   }),
-                  _buildDashboardCard(Icons.build, "Spare Parts", sparePartCount, () {
+                  _buildDashboardCard(Icons.build, "Spare Parts", "$sparePartCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => SparePartDashboard()));
                   }),
-                ],
+                  ],
+                physics: const NeverScrollableScrollPhysics(), // ✅ disable GridView’s own scroll
+
               ),
             ),
 
@@ -354,7 +356,7 @@ class _DashboardState extends State<Dashboard> {
 
   }
   // Helper widget to build cards
-  Widget _buildDashboardCard(IconData icon, String title, int count, VoidCallback onTap) {
+  Widget _buildDashboardCard(IconData icon, String title, String count, VoidCallback onTap) {
     return InkWell(
       onTap: onTap, // ✅ add navigation action here
       child: Card(

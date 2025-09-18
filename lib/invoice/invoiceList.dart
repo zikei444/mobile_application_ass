@@ -14,6 +14,8 @@ class InvoiceManagementPage extends StatefulWidget {
 class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
   String _selectedStatus = "All"; // filter
   String _sortBy = "Date"; // sort option
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +58,7 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
             return const Center(child: Text("No invoices found."));
           }
 
-          // 统计 status 和 payment_method
+          // calculate status and payment method for chart display
           Map<String, double> statusData = {};
           Map<String, double> methodData = {};
           for (var d in docs) {
@@ -74,24 +76,38 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
             return (d['status'] as String?) == _selectedStatus.toLowerCase();
           }).toList();
 
-          // Sort
+          // Filter by search
+          if (_searchQuery.isNotEmpty) {
+            filteredDocs = filteredDocs.where((d) {
+              final data = d.data() as Map<String, dynamic>;
+              return data['invoice_id'].toString().toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              );
+            }).toList();
+          }
+
+          // Sorting
           filteredDocs.sort((a, b) {
             final da = a.data() as Map<String, dynamic>;
             final db = b.data() as Map<String, dynamic>;
             switch (_sortBy) {
               case "Invoice ID":
-                return da['invoice_id'].toString().compareTo(db['invoice_id'].toString());
+                return da['invoice_id'].toString().compareTo(
+                  db['invoice_id'].toString(),
+                );
               case "Amount":
                 return (da['total'] as num).compareTo(db['total'] as num);
               case "Date":
               default:
-                return db['created_date'].compareTo(da['created_date']); // newest first
+                return db['created_date'].compareTo(
+                  da['created_date'],
+                ); // newest first
             }
           });
 
           return Column(
             children: [
-              // 📊 上半部：两个饼图
+              // pie chart part
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
@@ -128,9 +144,12 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
                 ),
               ),
 
-              // 🔍 Filter + Sort Controls
+              // Filter + Sort Controls
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 child: Row(
                   children: [
                     // Filter Dropdown
@@ -139,17 +158,24 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
                         value: _selectedStatus,
                         decoration: InputDecoration(
                           labelText: "Filter by Status",
-                          labelStyle: const TextStyle(color: Colors.grey), // label grey
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          // label grey
                           border: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.green), // default border
+                            borderSide: const BorderSide(color: Colors.green),
+                            // default border
                             borderRadius: BorderRadius.circular(8),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.green, width: 2), // green on focus
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2,
+                            ),
+                            // green on focus
                             borderRadius: BorderRadius.circular(8),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.green), // green when not focused
+                            borderSide: const BorderSide(color: Colors.green),
+                            // green when not focused
                             borderRadius: BorderRadius.circular(8),
                           ),
                           isDense: true,
@@ -157,10 +183,17 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
                         items: const [
                           DropdownMenuItem(value: "All", child: Text("All")),
                           DropdownMenuItem(value: "Paid", child: Text("Paid")),
-                          DropdownMenuItem(value: "Partial", child: Text("Partial")),
-                          DropdownMenuItem(value: "Unpaid", child: Text("Unpaid")),
+                          DropdownMenuItem(
+                            value: "Partial",
+                            child: Text("Partial"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Unpaid",
+                            child: Text("Unpaid"),
+                          ),
                         ],
-                        onChanged: (val) => setState(() => _selectedStatus = val!),
+                        onChanged: (val) =>
+                            setState(() => _selectedStatus = val!),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -170,25 +203,38 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
                         value: _sortBy,
                         decoration: InputDecoration(
                           labelText: "Sort by",
-                          labelStyle: const TextStyle(color: Colors.grey), // label grey
+                          labelStyle: const TextStyle(color: Colors.grey),
+                          // label grey
                           border: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.green), // default border
+                            borderSide: const BorderSide(color: Colors.green),
+                            // default border
                             borderRadius: BorderRadius.circular(8),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.green, width: 2), // green on focus
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2,
+                            ),
+                            // green on focus
                             borderRadius: BorderRadius.circular(8),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Colors.green), // green when not focused
+                            borderSide: const BorderSide(color: Colors.green),
+                            // green when not focused
                             borderRadius: BorderRadius.circular(8),
                           ),
                           isDense: true,
                         ),
                         items: const [
                           DropdownMenuItem(value: "Date", child: Text("Date")),
-                          DropdownMenuItem(value: "Invoice ID", child: Text("Invoice ID")),
-                          DropdownMenuItem(value: "Amount", child: Text("Amount")),
+                          DropdownMenuItem(
+                            value: "Invoice ID",
+                            child: Text("Invoice ID"),
+                          ),
+                          DropdownMenuItem(
+                            value: "Amount",
+                            child: Text("Amount"),
+                          ),
                         ],
                         onChanged: (val) => setState(() => _sortBy = val!),
                       ),
@@ -197,7 +243,36 @@ class _InvoiceManagementPageState extends State<InvoiceManagementPage> {
                 ),
               ),
 
-              // 📋 Invoice 列表
+              // search bar
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    labelText: "Search by Invoice ID",
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    prefixIcon: const Icon(Icons.search, color: Colors.green),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.green),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.green),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.green, width: 2),
+                    ),
+                  ),
+                  cursorColor: Colors.green,
+                  onChanged: (val) {
+                    setState(() => _searchQuery = val.trim());
+                  },
+                ),
+              ),
+
+              // invoice listing
               Expanded(
                 child: ListView.builder(
                   itemCount: filteredDocs.length,

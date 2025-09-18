@@ -22,11 +22,12 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
   @override
   void initState() {
     super.initState();
-    _loadStaffInfo(); //拉资料
+    _loadStaffInfo();
     _loadMonthEvents(_focusedDay);
-    _loadAllTimeHours(); // 算总小时
+    _loadAllTimeHours();
   }
 
+  // calculate staff total workload
   Future<void> _loadAllTimeHours() async {
     final snap = await FirebaseFirestore.instance
         .collection('schedules')
@@ -56,16 +57,17 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     setState(() => _allTimeHours = total);
   }
 
+  // load staff information
   Future<void> _loadStaffInfo() async {
     final doc = await FirebaseFirestore.instance
         .collection('staff')
         .doc(widget.staffId)
         .get();
     if (doc.exists) {
-      // print('>>> staff data = ${doc.data()}');
       setState(() => _staffInfo = doc.data());
     }
   }
+
 
   void _loadMonthEvents(DateTime month) async {
     final start = DateTime(month.year, month.month, 1);
@@ -78,7 +80,6 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
         .where('date', isLessThan: Timestamp.fromDate(end))
         .get();
 
-    // print('>>> loaded ${snap.docs.length} docs for ${widget.staffId}');
     final map = <DateTime, List<Map<String, dynamic>>>{};
 
     for (var doc in snap.docs) {
@@ -142,7 +143,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
 
       body: Column(
         children: [
-          if (_staffInfo != null) _buildStaffHeader(), // 顶部资料
+          if (_staffInfo != null) _buildStaffHeader(),
           Expanded(
             child: Column(
               children: [
@@ -175,7 +176,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                     titleTextStyle: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green, // ✅ green month/year
+                      color: Colors.green,
                     ),
                     leftChevronIcon: Icon(
                       Icons.chevron_left,
@@ -188,18 +189,18 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                   ),
                   calendarStyle: const CalendarStyle(
                     todayDecoration: BoxDecoration(
-                      color: Colors.green, // ✅ green for today
+                      color: Colors.green,
                       shape: BoxShape.circle,
                     ),
                     selectedDecoration: BoxDecoration(
-                      color: Colors.lightGreen, // ✅ darker green for selected
+                      color: Colors.lightGreen,
                       shape: BoxShape.circle,
                     ),
                     markerDecoration: BoxDecoration(
-                      color: Colors.blue, // ✅ orange markers for contrast
+                      color: Colors.blue,
                       shape: BoxShape.circle,
                     ),
-                    outsideDaysVisible: false, // hide days from other months
+                    outsideDaysVisible: false,
                   ),
                 ),
 
@@ -273,7 +274,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                                           .doc(s['docId'])
                                           .delete();
 
-                                      _loadMonthEvents(_focusedDay); // 刷新界面
+                                      _loadMonthEvents(_focusedDay); // refresh page
                                       _loadAllTimeHours();
                                     }
                                   },
@@ -291,6 +292,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     );
   }
 
+  // staff information header
   Widget _buildStaffHeader() {
     final name = _staffInfo?['name'] ?? '';
     final role = _staffInfo?['role'] ?? '';
@@ -330,6 +332,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     );
   }
 
+  // add schedules and save
   Future<void> _saveSchedule(
     DateTime date,
     TimeOfDay start,
@@ -348,7 +351,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
       'status': 'working',
     });
 
-    // 重新加载当前月 & 总小时
+    // reload month and total hours work
     _loadMonthEvents(_focusedDay);
     _loadAllTimeHours();
 
@@ -357,6 +360,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     ).showSnackBar(const SnackBar(content: Text('Schedule added')));
   }
 
+  // add schedules
   void _openAddScheduleDialog() async {
     DateTime selectedDate = DateTime.now();
     TimeOfDay? start, end;
@@ -368,7 +372,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
           builder: (ctx, setState) {
             return Dialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16), // ✅ rounded corners
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -380,7 +384,7 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green, // ✅ theme color
+                        color: Colors.green,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -529,7 +533,6 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                               final endMinutes = end!.hour * 60 + end!.minute;
 
                               if (endMinutes <= startMinutes) {
-                                // Show inline warning instead of Snackbar behind dialog
                                 showDialog(
                                   context: ctx,
                                   builder: (_) => AlertDialog(

@@ -65,6 +65,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
     return "paid";
   }
 
+  // update invoice
   Future<void> _updateInvoice() async {
     await FirebaseFirestore.instance
         .collection("invoice")
@@ -83,6 +84,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
     setState(() => isEditing = false);
   }
 
+  // delete invoice
   Future<void> _deleteInvoice() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -176,7 +178,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
             ),
             const SizedBox(height: 8),
 
-            // Table with scroll
+            // Table of parts
             Expanded(
               child: SingleChildScrollView(
                 child: Table(
@@ -287,7 +289,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                     ),
                     onChanged: (v) {
                       double entered = double.tryParse(v) ?? 0;
-                      // validation: paymentReceived 不能超过 total
+                      // validation: paymentReceived < total
                       if (entered > (invoiceData?['total'] ?? 0)) {
                         entered = (invoiceData?['total'] ?? 0).toDouble();
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -368,7 +370,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                   ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red, // ✅ Delete = red
+                    backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

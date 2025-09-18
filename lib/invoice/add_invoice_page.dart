@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_application_ass/sparePart/add_usage.dart';
 
-
 class AddInvoicePage extends StatefulWidget {
   const AddInvoicePage({super.key});
 
@@ -15,7 +14,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
 
   String? handledBy;
   String? vehicleId;
-  String? paymentMethod = "cash";
+  String? paymentMethod = "cash";  // default cash
   String serviceType = "";
   double paymentReceived = 0;
   List<Map<String, dynamic>> selectedParts = [];
@@ -31,6 +30,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
     return "paid";
   }
 
+  // Function to generate invoice id automatically +1
   Future<String> _generateInvoiceId() async {
     final snap = await FirebaseFirestore.instance
         .collection("invoice")
@@ -40,7 +40,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
 
     int nextNum = 1;
     if (snap.docs.isNotEmpty) {
-      final lastId = snap.docs.first['invoice_id']; // e.g. "INV020"
+      final lastId = snap.docs.first['invoice_id'];
       final numericPart = lastId.replaceAll(RegExp(r'[^0-9]'), '');
       nextNum = int.parse(numericPart) + 1;
     }
@@ -48,10 +48,10 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
     return "INV${nextNum.toString().padLeft(3, '0')}";
   }
 
+  // add new invoice to database
   Future<void> _addInvoice() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // ❌ 验证 Payment Received 不能超过 total
     if (paymentReceived > total) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Payment cannot exceed total")),
@@ -75,13 +75,14 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
       "total": total,
     });
 
-    // Add usage record when invoice created -- call "add_usage.dart"
+    // part usage
     await AddUsage.createUsagesForInvoice(invoiceId, selectedParts);
 
-    // 🔹 更新库存
+
     for (var p in selectedParts) {
-      final partDoc =
-      FirebaseFirestore.instance.collection("spare_parts").doc(p['part_id']);
+      final partDoc = FirebaseFirestore.instance
+          .collection("spare_parts")
+          .doc(p['part_id']);
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         final snap = await transaction.get(partDoc);
         if (!snap.exists) return;
@@ -100,34 +101,35 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
     }
   }
 
+  // add part, if user adding same part, accumulate it
   void _addPart(Map<String, dynamic> part, int qty) {
     final unitPrice = (part['price'] as num).toDouble();
     final stock = (part['quantity'] as num).toInt();
 
-    // 检查当前已选数量
-    final existingIndex =
-    selectedParts.indexWhere((p) => p['part_id'] == part['id']);
-    int alreadySelectedQty =
-    existingIndex != -1 ? selectedParts[existingIndex]['quantity'] as int : 0;
+    final existingIndex = selectedParts.indexWhere(
+      (p) => p['part_id'] == part['id'],
+    );
+    int alreadySelectedQty = existingIndex != -1
+        ? selectedParts[existingIndex]['quantity'] as int
+        : 0;
 
-    // ✅ 验证总数量不能超过库存
     if (qty + alreadySelectedQty > stock) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content:
-            Text("Quantity exceeds stock (Available: $stock, Already selected: $alreadySelectedQty)")),
+          content: Text(
+            "Quantity exceeds stock (Available: $stock, Already selected: $alreadySelectedQty)",
+          ),
+        ),
       );
       return;
     }
 
     setState(() {
       if (existingIndex != -1) {
-        // 🔹 已经选过 → 更新数量和总价
         final newQty = alreadySelectedQty + qty;
         selectedParts[existingIndex]['quantity'] = newQty;
         selectedParts[existingIndex]['total'] = unitPrice * newQty;
       } else {
-        // 🔹 没选过 → 新增
         selectedParts.add({
           "part_id": part['id'],
           "name": part['name'],
@@ -140,6 +142,21 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
     });
   }
 
+  InputDecoration _greenInputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.grey),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.green, width: 2),
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.green),
+      ),
+      border: const OutlineInputBorder(),
+      isDense: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,7 +167,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // Handled By (Cashiers only)
+              // Handled By
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection("staff")
@@ -160,7 +177,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
                   if (!snap.hasData) return const CircularProgressIndicator();
                   final cashiers = snap.data!.docs;
                   return DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Handled By"),
+                    decoration: _greenInputDecoration("Handled By"),
                     value: handledBy,
                     items: cashiers.map((c) {
                       final id = (c['id'] ?? '').toString();
@@ -172,33 +189,33 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
                     }).toList(),
                     onChanged: (v) => setState(() => handledBy = v),
                     validator: (v) =>
-                    v == null ? "Please select cashier" : null,
+                        v == null ? "Please select cashier" : null,
                   );
                 },
               ),
 
-              // Vehicle
               const SizedBox(height: 12),
+
+              // Vehicle
               StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection("vehicles").snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection("vehicles")
+                    .snapshots(),
                 builder: (context, snap) {
                   if (!snap.hasData) return const CircularProgressIndicator();
                   final vehicles = snap.data!.docs;
-
-                  // Sort ascending by vehicle_id
                   vehicles.sort((a, b) {
                     final idA = (a['vehicle_id'] ?? '').toString();
                     final idB = (b['vehicle_id'] ?? '').toString();
                     return idA.compareTo(idB);
                   });
 
-
                   return DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Vehicle"),
+                    decoration: _greenInputDecoration("Vehicle"),
                     value: vehicleId,
                     items: vehicles.map((c) {
                       final id = (c['vehicle_id'] ?? '').toString();
-                      final plate = (c['plateNumber'] ?? '').toString();
+                      final plate = (c['plateNumber'] ?? 'Vehicle No Longer Exist in System').toString();
                       return DropdownMenuItem<String>(
                         value: id,
                         child: Text("$id - $plate"),
@@ -206,22 +223,22 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
                     }).toList(),
                     onChanged: (v) => setState(() => vehicleId = v),
                     validator: (v) =>
-                    v == null ? "Please select vehicle" : null,
+                        v == null ? "Please select vehicle" : null,
                   );
                 },
               ),
 
-              // Service Type
               const SizedBox(height: 12),
               TextFormField(
-                decoration: const InputDecoration(labelText: "Service Type"),
+                decoration: _greenInputDecoration("Service Type"),
                 onChanged: (v) => serviceType = v,
                 validator: (v) =>
-                v == null || v.isEmpty ? "Enter service type" : null,
+                    v == null || v.isEmpty ? "Enter service type" : null,
               ),
 
-              // Parts selection
               const SizedBox(height: 16),
+
+              // Parts
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection("spare_parts")
@@ -248,30 +265,52 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
                         return ListTile(
                           title: Text("$partId - $name (Stock: $stock)"),
                           trailing: IconButton(
-                            icon: const Icon(Icons.add),
+                            icon: const Icon(Icons.add, color: Colors.green),
                             onPressed: () async {
                               final qtyController = TextEditingController();
                               await showDialog(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: Text("Quantity for $name"),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  title: Text(
+                                    "Quantity for $name",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
                                   content: TextField(
                                     controller: qtyController,
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: "Quantity",
+                                    decoration: _greenInputDecoration(
+                                      "Quantity",
                                     ),
                                   ),
                                   actions: [
                                     TextButton(
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors
+                                            .grey[700],
+                                      ),
                                       onPressed: () => Navigator.pop(ctx),
                                       child: const Text("Cancel"),
                                     ),
                                     ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
                                       onPressed: () {
                                         final qty =
                                             int.tryParse(qtyController.text) ??
-                                                0;
+                                            0;
                                         if (qty > 0) {
                                           _addPart(part, qty);
                                         }
@@ -324,7 +363,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: paymentMethod,
-                decoration: const InputDecoration(labelText: "Payment Method"),
+                decoration: _greenInputDecoration("Payment Method"),
                 items: const [
                   DropdownMenuItem(value: "cash", child: Text("Cash")),
                   DropdownMenuItem(value: "card", child: Text("Card")),
@@ -335,9 +374,7 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
 
               const SizedBox(height: 12),
               TextFormField(
-                decoration: const InputDecoration(
-                  labelText: "Payment Received",
-                ),
+                decoration: _greenInputDecoration("Payment Received"),
                 keyboardType: TextInputType.number,
                 onChanged: (v) {
                   setState(() {
@@ -359,6 +396,17 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
 
               const SizedBox(height: 20),
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
                 onPressed: _addInvoice,
                 child: const Text("Add Invoice"),
               ),
@@ -369,4 +417,3 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
     );
   }
 }
-

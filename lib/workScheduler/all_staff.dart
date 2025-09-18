@@ -11,7 +11,7 @@ class StaffListPage extends StatelessWidget {
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
     final hourlyRateController = TextEditingController();
-    String role = 'Cashier'; // 默认值
+    String role = 'Cashier'; // default cashier
 
     await showDialog(
       context: context,
@@ -39,7 +39,7 @@ class StaffListPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black, // ✅ Theme color
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -143,7 +143,7 @@ class StaffListPage extends StatelessWidget {
                         const SizedBox(width: 12),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green, // ✅ Green theme
+                            backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -161,7 +161,7 @@ class StaffListPage extends StatelessWidget {
                                 hourlyRateController.text.trim(),
                               );
 
-                              // 🔹 Auto-generate ID
+                              // Auto-generate ID =  cashier c, mecahnics m
                               final prefix = role == 'Cashier' ? 'C' : 'M';
                               final snap = await FirebaseFirestore.instance
                                   .collection('staff')
@@ -226,7 +226,7 @@ class StaffListPage extends StatelessWidget {
       builder: (ctx) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16), // ✅ Rounded corners
+            borderRadius: BorderRadius.circular(16),
           ),
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -247,7 +247,7 @@ class StaffListPage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green, // ✅ Green title
+                        color: Colors.green,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -264,7 +264,7 @@ class StaffListPage extends StatelessWidget {
                         labelStyle: TextStyle(color: Colors.grey),
                         floatingLabelStyle: TextStyle(
                           color: Colors.green,
-                        ), // ✅ Label green when focused
+                        ),
                       ),
                       validator: (v) =>
                           v == null || v.trim().isEmpty ? "Enter name" : null,
@@ -298,7 +298,7 @@ class StaffListPage extends StatelessWidget {
                         ),
                         floatingLabelStyle: TextStyle(color: Colors.green),
                       ),
-                      enabled: false, // read-only
+                      enabled: false, // read-only - not able to change role
                     ),
                     const SizedBox(height: 12),
 
@@ -338,7 +338,7 @@ class StaffListPage extends StatelessWidget {
                         const SizedBox(width: 12),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green, // ✅ Green button
+                            backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -383,7 +383,7 @@ class StaffListPage extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), // ✅ rounded corners
+          borderRadius: BorderRadius.circular(16),
         ),
         title: const Text(
           "Confirm Delete",
@@ -407,7 +407,7 @@ class StaffListPage extends StatelessWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red, // ✅ red for delete
+              backgroundColor: Colors.red,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -437,7 +437,7 @@ class StaffListPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           final docs = snap.data!.docs;
 
-          // 分组
+          // group by role
           final cashiers = docs.where((d) => d['role'] == 'Cashier').toList();
           final mechanics = docs.where((d) => d['role'] == 'Mechanic').toList();
 
@@ -519,12 +519,12 @@ class StaffListPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addStaff(context),
-        backgroundColor: Colors.green, // ✅ green theme
-        foregroundColor: Colors.white, // ✅ white icon/text
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: const Text("Add Staff"),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12), // ✅ smoother look
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
