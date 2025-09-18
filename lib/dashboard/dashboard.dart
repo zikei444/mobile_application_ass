@@ -42,7 +42,7 @@ class _DashboardState extends State<Dashboard> {
     final staffSnap =
     await FirebaseFirestore.instance.collection('staff').get();
     final spareSnap =
-    await FirebaseFirestore.instance.collection('spareParts').get();
+    await FirebaseFirestore.instance.collection('spare_parts').get();
 
     setState(() {
       vehicleCount = vehicleSnap.size;

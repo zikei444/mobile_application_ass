@@ -37,12 +37,5 @@ class VehicleService {
       await doc.reference.delete();
     }
   }
-  // Future<void> deleteVehicle(String userId, String vehicleId) async {
-  //   await _firestore
-  //       .collection('users')
-  //       .doc(userId)
-  //       .collection('vehicles')
-  //       .doc(vehicleId)
-  //       .delete();
-  // }
+
 }

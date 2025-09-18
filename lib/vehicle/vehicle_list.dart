@@ -82,10 +82,16 @@ class VehicleListPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => VehicleDetailsPage(vehicle: data),
+                      builder: (context) => VehicleDetailsPage(
+                        vehicle: {
+                          ...data,
+                          'id': v.id, // make sure 'id' exists
+                        },
+                      ),
                     ),
                   );
                 },
+
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () {

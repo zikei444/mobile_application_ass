@@ -1,33 +1,413 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
-class VehicleDetailsPage extends StatelessWidget {
+class VehicleDetailsPage extends StatefulWidget {
   final Map<String, dynamic> vehicle;
 
   const VehicleDetailsPage({super.key, required this.vehicle});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Vehicle Details"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  State<VehicleDetailsPage> createState() => _VehicleDetailsPageState();
+}
+
+class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
+
+  // ===== Fetch all appointments for this vehicle =====
+  Future<List<Map<String, dynamic>>> _fetchVehicleAppointments() async {
+    // Firestore query: get all appointments where vehicleId matches
+    final appointmentSnap = await FirebaseFirestore.instance
+        .collection('appointments')
+        .where('vehicleId', isEqualTo: widget.vehicle['vehicle_id'])
+        .get();
+
+    // Convert QuerySnapshot to a list of maps and sort by date descending
+    final vehicleAppointments = appointmentSnap.docs
+        .map((e) => e.data()) // Get document data as Map
+        .toList()
+      ..sort((a, b) {
+        final da = a['date'] as Timestamp?;
+        final db = b['date'] as Timestamp?;
+        return db?.compareTo(da ?? Timestamp.now()) ?? 0;
+      });
+
+    // Debug print to check how many appointments were found
+    print("Found ${vehicleAppointments.length} appointments for vehicle ${widget.vehicle['id']}");
+
+    return vehicleAppointments;
+  }
+
+  // ===== Helper widget to display vehicle detail row =====
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: RichText(
+        text: TextSpan(
           children: [
-            Text("Plate Number: ${vehicle['plate']}", style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Text("Type: ${vehicle['type']}", style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Text("Model: ${vehicle['model']}", style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Text("Kilometer: ${vehicle['kilometer']}", style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 10),
-            Text("Size: ${vehicle['size']}", style: const TextStyle(fontSize: 18)),
+            TextSpan(
+              text: "$label: ",
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+            ),
+            TextSpan(
+              text: value,
+              style: const TextStyle(fontSize: 18, color: Colors.black87),
+            ),
           ],
         ),
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final vehicle = widget.vehicle;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Vehicle Details"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ===== Vehicle Details Card =====
+            // Card(
+            //   elevation: 4,
+            //   shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(12)),
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16.0),
+            //     child: Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         _buildDetailRow(
+            //             "Plate Number", (vehicle['plateNumber'] ?? "-").toString()),
+            //         _buildDetailRow(
+            //             "Type", (vehicle['type'] ?? "-").toString()),
+            //         _buildDetailRow(
+            //             "Model", (vehicle['model'] ?? "-").toString()),
+            //         _buildDetailRow(
+            //             "Kilometer", (vehicle['kilometer']?.toString() ?? "-")),
+            //         _buildDetailRow(
+            //             "Size", (vehicle['size'] ?? "-").toString()),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+            // ===== Vehicle Details Card with Plate Number as Title =====
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ===== Plate Number Row with Edit Icon =====
+                    // ===== Inside your VehicleDetailsPage, in the _buildDetailRow() area =====
+// Add an edit button beside Plate Number
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          vehicle['plateNumber']?.toString() ?? "-",
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: Colors.grey),
+                          onPressed: () {
+                            // Open the edit dialog when pen icon is pressed
+                            _showEditVehicleForm(vehicle, 'id');
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // ===== First Row: Type | Model | Kilometer =====
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Type: ${(vehicle['type'] ?? '-').toString()}",
+                            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                        Text("Model: ${(vehicle['model'] ?? '-').toString()}",
+                            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                        Text("KM: ${(vehicle['kilometer']?.toString() ?? '-')}",
+                            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ===== Second Row: Size | (empty slot) =====
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text("Size: ${(vehicle['size'] ?? '-').toString()}",
+                            style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                        const SizedBox(width: 16),
+                        // You can add another detail here later if needed
+                        Text("", style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+
+            const SizedBox(height: 24),
+            const Text(
+              "Service History",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            // ===== Service History List =====
+            FutureBuilder<List<Map<String, dynamic>>>(
+              future: _fetchVehicleAppointments(), // fetch using exact customer-style method
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text("No service history found."),
+                  );
+                }
+
+                final services = snapshot.data!;
+
+                return Column(
+                  children: services.map((service) {
+                    final Timestamp? ts = service['date'] as Timestamp?;
+                    final DateTime date = ts?.toDate() ?? DateTime.now();
+                    final status = (service['status'] ?? 'In Progress').toString();
+
+                    return Card(
+                      child: ListTile(
+                        title: Text(service['serviceType']?.toString() ?? "-"),
+                        subtitle: Text(
+                          "Date: ${DateFormat.yMMMMd().add_jm().format(date)}\n"
+                              "Notes: ${service['notes']?.toString() ?? '-'}",
+                        ),
+                        trailing: Chip(
+                          label: Text(
+                            status,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          backgroundColor: status.toLowerCase() == "completed"
+                              ? Colors.green
+                              : status.toLowerCase() == "cancelled"
+                              ? Colors.red
+                              : Colors.orange,
+                        ),
+                        onTap: () {
+                          // ===== Show full service details in a dialog =====
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text("Service Details"),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("ID: ${service['id'] ?? 'N/A'}"),
+                                  Text("Service Type: ${service['serviceType'] ?? 'N/A'}"),
+                                  Text("Date: ${DateFormat.yMMMMd().add_jm().format(date)}"),
+                                  Text("Status: $status"),
+                                  Text("Notes: ${service['notes'] ?? 'N/A'}"),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Close"),
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  Widget _buildGreyDetail(String label, String value) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200, // subtle grey background
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+               // fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+// ===== Map of vehicle types and models =====
+  final Map<String, List<String>> vehicleModels = {
+    "Mercedes": ["C180", "C500"],
+    "BMW": ["BMW1", "BMW2"],
+  };
+  void _showEditVehicleForm(Map<String, dynamic> vehicle, String docId) {
+    // Controllers pre-filled with current vehicle data
+    final _plateController = TextEditingController(text: vehicle['plateNumber']);
+    final _kmController = TextEditingController(text: vehicle['kilometer']?.toString());
+    final _sizeController = TextEditingController(text: vehicle['size']?.toString());
+
+    String? _selectedType = vehicle['type'];
+    String? _selectedModel = vehicle['model'];
+
+    final Map<String, List<String>> vehicleModels = {
+      "Mercedes": ["C180", "C500"],
+      "BMW": ["BMW1", "BMW2"],
+    };
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final _formKey = GlobalKey<FormState>();
+
+        return AlertDialog(
+          title: const Text("Edit Vehicle"),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Plate Number
+                  TextFormField(
+                    controller: _plateController,
+                    decoration: const InputDecoration(labelText: "Plate Number"),
+                    validator: (value) => value!.isEmpty ? "Enter plate number" : null,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Vehicle Type Dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedType,
+                    decoration: const InputDecoration(labelText: "Vehicle Type"),
+                    items: vehicleModels.keys.map((type) {
+                      return DropdownMenuItem(value: type, child: Text(type));
+                    }).toList(),
+                    onChanged: (value) {
+                      _selectedType = value;
+                      _selectedModel = null; // reset model if type changes
+                      (context as Element).markNeedsBuild();
+                    },
+                    validator: (value) => value == null ? "Select type" : null,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Vehicle Model Dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedModel,
+                    decoration: const InputDecoration(labelText: "Vehicle Model"),
+                    items: _selectedType == null
+                        ? []
+                        : vehicleModels[_selectedType]!.map((model) {
+                      return DropdownMenuItem(value: model, child: Text(model));
+                    }).toList(),
+                    onChanged: (value) {
+                      _selectedModel = value;
+                    },
+                    validator: (value) => value == null ? "Select model" : null,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Kilometer
+                  TextFormField(
+                    controller: _kmController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Kilometer"),
+                    validator: (value) => value!.isEmpty ? "Enter kilometer" : null,
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Size
+                  TextFormField(
+                    controller: _sizeController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Size"),
+                    validator: (value) => value!.isEmpty ? "Enter size" : null,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel")),
+            ElevatedButton(
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  // ✅ Use the Firestore document ID to update
+                  await FirebaseFirestore.instance
+                      .collection('vehicles')
+                      .doc(docId)
+                      .update({
+                    'plateNumber': _plateController.text,
+                    'type': _selectedType,
+                    'model': _selectedModel,
+                    'kilometer': int.tryParse(_kmController.text) ?? 0,
+                    'size': int.tryParse(_sizeController.text) ?? 0,
+                  });
+
+                  Navigator.pop(context); // close dialog
+
+                  // Show snackbar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Vehicle details updated!")),
+                  );
+
+                  setState(() {}); // Refresh the page
+                }
+              },
+              child: const Text("Save"),
+            )
+          ],
+        );
+      },
+    );
+  }
+
 }
