@@ -31,8 +31,13 @@ class Signup extends StatelessWidget {
             child: Column(
               children: [
                 Center(
-                  child: Text(
-                    'Register Account',
+                    child: Image.asset(
+                      'assets/logo.jpg',
+                      height: 120,
+                    ),
+                  ),
+                  Text(
+                    'Create an Account',
                     style: GoogleFonts.raleway(
                         textStyle: const TextStyle(
                             color: Colors.black,
@@ -41,7 +46,7 @@ class Signup extends StatelessWidget {
                         )
                     ),
                   ),
-                ),
+
                 const SizedBox(height: 80,),
                 _emailAddress(),
                 const SizedBox(height: 20,),
@@ -128,7 +133,7 @@ class Signup extends StatelessWidget {
   Widget _signup(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xff0D6EFD),
+        backgroundColor: const Color(0xFF138146),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
@@ -142,7 +147,13 @@ class Signup extends StatelessWidget {
             context: context
         );
       },
-      child: const Text("Sign Up"),
+      child: const Text("Sign Up",
+        style: TextStyle(
+          color: Colors.white, // ✅ set text color to white
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 

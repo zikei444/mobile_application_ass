@@ -3,13 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile_application_ass/providers/vehicle_provider.dart';
 import 'package:mobile_application_ass/seed/july_scheduler.dart';
 import 'package:mobile_application_ass/seed/seed_invoices.dart';
-// import 'package:mobile_application_ass/seed/august_scheduler.dart';
-// import 'package:mobile_application_ass/seed/staff_seed.dart';
-//import 'package:mobile_application_ass/seed/spare_part.dart';
-//import 'package:mobile_application_ass/seed/procurement_record.dart';
-//import 'package:mobile_application_ass/seed/appointment.dart';
-//import 'package:mobile_application_ass/seed/car.dart';
-//import 'package:mobile_application_ass/seed/usage.dart';
+
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'login/login.dart';

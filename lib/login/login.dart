@@ -51,14 +51,19 @@ class Login extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Center(
-                child: Text(
-                  'Hello Again',
-                  style: GoogleFonts.raleway(
-                      textStyle: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 32
-                      )
+                child: Image.asset(
+                  'assets/logo.jpg',
+                  height: 120,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Login to your account",
+                style: GoogleFonts.raleway(
+                  textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -147,7 +152,7 @@ class Login extends StatelessWidget {
   Widget _signin(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xff0D6EFD),
+        backgroundColor: const Color(0xFF138146),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
@@ -162,7 +167,13 @@ class Login extends StatelessWidget {
         );
 
       },
-      child: const Text("Log In"),
+      child: const Text("Log In",
+        style: TextStyle(
+          color: Colors.white, // ✅ set text color to white
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
