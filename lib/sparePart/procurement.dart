@@ -178,7 +178,7 @@ class _ProcurementState extends State<Procurement> {
             const SizedBox(height: 10),
             TextField(
               decoration: const InputDecoration(
-                hintText: 'Search by ID / Name / Category',
+                hintText: 'Search by ID / Name',
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {
@@ -239,7 +239,7 @@ class _ProcurementState extends State<Procurement> {
             const SizedBox(height: 10),
             TextField(
               decoration: const InputDecoration(
-                hintText: 'Search Procurement Records',
+                hintText: 'Search by Procurement ID',
                 border: OutlineInputBorder(),
               ),
               onChanged: (value) {

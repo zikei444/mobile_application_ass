@@ -160,7 +160,7 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
 
             // Navigation Buttons
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -172,7 +172,7 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
               onPressed: () {
                 Navigator.push(
                   context,

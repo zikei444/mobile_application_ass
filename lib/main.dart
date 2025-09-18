@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile_application_ass/providers/vehicle_provider.dart';
 import 'package:mobile_application_ass/seed/july_scheduler.dart';
 import 'package:mobile_application_ass/seed/seed_invoices.dart';
+import 'package:mobile_application_ass/seed/usage.dart';
 
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -27,8 +28,7 @@ void main() async {
   //  await seedSpareParts();
   //  await seedProcurements();
   //  await seedAppointments();
-  //await seedSparePartUsage();
-  //await seedCars();
+  //  await seedSparePartUsage();
   // await seedInvoices();
 
   runApp(MultiProvider(

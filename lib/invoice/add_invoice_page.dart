@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobile_application_ass/sparePart/add_usage.dart';
+
 
 class AddInvoicePage extends StatefulWidget {
   const AddInvoicePage({super.key});
@@ -72,6 +74,9 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
       "status": status,
       "total": total,
     });
+
+    // Add usage record when invoice created -- call "add_usage.dart"
+    await AddUsage.createUsagesForInvoice(invoiceId, selectedParts);
 
     // 🔹 更新库存
     for (var p in selectedParts) {
@@ -364,3 +369,4 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
     );
   }
 }
+

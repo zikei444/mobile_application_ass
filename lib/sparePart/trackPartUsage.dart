@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_application_ass/sparePart/procurement.dart';
+import 'package:mobile_application_ass/sparePart/spare_part_dashboard.dart';
 
 class TrackPartUsage extends StatefulWidget {
   const TrackPartUsage({super.key});
@@ -126,8 +128,8 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: showCalendar
-                    ? "Search by usage ID, invoice ID, spare part ID or name"
-                    : "Search by invoice ID, spare part ID or name",
+                    ? "Search by Invoice ID or spare part ID"
+                    : "Search by invoice ID or spare part ID",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -221,6 +223,28 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                   return buildUsageTable(filteredDocs);
                 },
               ),
+            ),
+            // ---------------- Navigation Buttons -----------------
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Procurement()),
+                );
+              },
+              child: const Text('Procurement Request'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SparePartDashboard()),
+                );
+              },
+              child: const Text('Spare Part Control'),
             ),
           ],
         ),
