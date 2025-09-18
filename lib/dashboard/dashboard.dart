@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../invoice/invoiceList.dart';
 import '../services/auth_service.dart';
 import '../vehicle/vehicle_list.dart';
 import '../workScheduler/schedule.dart';
@@ -138,6 +139,16 @@ class _DashboardState extends State<Dashboard> {
               title: const Text('Vehicles'),
               onTap: () {
                 Navigator.pushNamed(context, '/vehicles');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.receipt_long),
+              title: const Text('Invoices'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InvoiceManagementPage()),
+                );
               },
             ),
             ListTile(

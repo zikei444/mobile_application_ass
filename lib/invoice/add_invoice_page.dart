@@ -175,15 +175,24 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
               // Vehicle
               const SizedBox(height: 12),
               StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection("cars").snapshots(),
+                stream: FirebaseFirestore.instance.collection("vehicles").snapshots(),
                 builder: (context, snap) {
                   if (!snap.hasData) return const CircularProgressIndicator();
-                  final cars = snap.data!.docs;
+                  final vehicles = snap.data!.docs;
+
+                  // Sort ascending by vehicle_id
+                  vehicles.sort((a, b) {
+                    final idA = (a['vehicle_id'] ?? '').toString();
+                    final idB = (b['vehicle_id'] ?? '').toString();
+                    return idA.compareTo(idB);
+                  });
+
+
                   return DropdownButtonFormField<String>(
                     decoration: const InputDecoration(labelText: "Vehicle"),
                     value: vehicleId,
-                    items: cars.map((c) {
-                      final id = (c['id'] ?? '').toString();
+                    items: vehicles.map((c) {
+                      final id = (c['vehicle_id'] ?? '').toString();
                       final plate = (c['plateNumber'] ?? '').toString();
                       return DropdownMenuItem<String>(
                         value: id,
