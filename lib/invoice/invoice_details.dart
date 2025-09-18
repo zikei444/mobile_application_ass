@@ -33,9 +33,10 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
     final data = snap.data();
     if (data == null) return;
 
-    final vehicleSnap = await FirebaseFirestore.instance
-        .collection("cars")
-        .doc(data['vehicle_id'])
+    final vehicleQuery = await FirebaseFirestore.instance
+        .collection("vehicles")
+        .where("vehicle_id", isEqualTo: data['vehicle_id'])
+        .limit(1)
         .get();
 
     final staffSnap = await FirebaseFirestore.instance
@@ -45,7 +46,9 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
 
     setState(() {
       invoiceData = data;
-      vehicleData = vehicleSnap.data();
+      vehicleData = vehicleQuery.docs.isNotEmpty
+          ? vehicleQuery.docs.first.data() as Map<String, dynamic>
+          : null;
       staffData = staffSnap.data();
       paymentReceived = (data['payment_receive'] as num).toDouble();
       paymentMethod = data['payment_method'] ?? "cash";
@@ -67,11 +70,11 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
         .collection("invoice")
         .doc(widget.invoiceId)
         .update({
-      "payment_receive": paymentReceived,
-      "payment_method": paymentMethod,
-      "outstanding": outstanding,
-      "status": status,
-    });
+          "payment_receive": paymentReceived,
+          "payment_method": paymentMethod,
+          "outstanding": outstanding,
+          "status": status,
+        });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Invoice updated successfully")),
@@ -106,9 +109,9 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
           .delete();
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Invoice deleted")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Invoice deleted")));
       }
     }
   }
@@ -116,9 +119,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
   @override
   Widget build(BuildContext context) {
     if (invoiceData == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final parts = (invoiceData?['parts'] as List<dynamic>? ?? [])
@@ -141,29 +142,38 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Vehicle ID: ${invoiceData?['vehicle_id'] ?? '-'}",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      "Vehicle ID: ${invoiceData?['vehicle_id'] ?? '-'}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     Text("Plate: ${vehicleData?['plateNumber'] ?? '-'}"),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text("Invoice ID: ${invoiceData?['invoice_id'] ?? '-'}",
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
                     Text(
-                        "Created: ${invoiceData?['created_date']?.toDate().toString().substring(0, 10) ?? '-'}"),
+                      "Invoice ID: ${invoiceData?['invoice_id'] ?? '-'}",
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "Created: ${invoiceData?['created_date']?.toDate().toString().substring(0, 10) ?? '-'}",
+                    ),
                   ],
                 ),
               ],
             ),
 
             const SizedBox(height: 8),
-            const Text("GreenStem, Block A, A-3-3A, \nAtivo Plaza, Bandar Sri Damansara, \n52200 Kuala Lumpur, Selangor",
-                style: TextStyle(color: Colors.grey)),
+            const Text(
+              "GreenStem, Block A, A-3-3A, \nAtivo Plaza, Bandar Sri Damansara, \n52200 Kuala Lumpur, Selangor",
+              style: TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 16),
-            const Text("Parts",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              "Parts",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 8),
 
             // Table with scroll
@@ -183,25 +193,40 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                       decoration: BoxDecoration(color: Colors.grey),
                       children: [
                         Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Text("ID",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
+                          padding: EdgeInsets.all(4),
+                          child: Text(
+                            "ID",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                         Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Text("Name",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
+                          padding: EdgeInsets.all(4),
+                          child: Text(
+                            "Name",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                         Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Text("Qty",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
+                          padding: EdgeInsets.all(4),
+                          child: Text(
+                            "Qty",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                         Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Text("Unit Price",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
+                          padding: EdgeInsets.all(4),
+                          child: Text(
+                            "Unit Price",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                         Padding(
-                            padding: EdgeInsets.all(4),
-                            child: Text("Price",
-                                style: TextStyle(fontWeight: FontWeight.bold))),
+                          padding: EdgeInsets.all(4),
+                          child: Text(
+                            "Price",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
                       ],
                     ),
                     ...parts.map((p) {
@@ -240,58 +265,69 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
               alignment: Alignment.centerRight,
               child: Text(
                 "Total: RM${invoiceData?['total'] ?? 0}",
-                style:
-                const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
 
             const SizedBox(height: 16),
             Text(
-                "Invoice Prepared By: ${invoiceData?['handled_by'] ?? '-'} - ${staffData?['name'] ?? '-'}"),
+              "Invoice Prepared By: ${invoiceData?['handled_by'] ?? '-'} - ${staffData?['name'] ?? '-'}",
+            ),
             const SizedBox(height: 4),
 
             isEditing
                 ? TextFormField(
-              initialValue: paymentReceived.toString(),
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Payment Received",
-              ),
-              onChanged: (v) {
-                double entered = double.tryParse(v) ?? 0;
-                // validation: paymentReceived 不能超过 total
-                if (entered > (invoiceData?['total'] ?? 0)) {
-                  entered = (invoiceData?['total'] ?? 0).toDouble();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Payment received cannot exceed total"),
+                    initialValue: paymentReceived.toString(),
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: "Payment Received",
                     ),
-                  );
-                }
-                setState(() {
-                  paymentReceived = entered;
-                });
-              },
-            )
+                    onChanged: (v) {
+                      double entered = double.tryParse(v) ?? 0;
+                      // validation: paymentReceived 不能超过 total
+                      if (entered > (invoiceData?['total'] ?? 0)) {
+                        entered = (invoiceData?['total'] ?? 0).toDouble();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Payment received cannot exceed total",
+                            ),
+                          ),
+                        );
+                      }
+                      setState(() {
+                        paymentReceived = entered;
+                      });
+                    },
+                  )
                 : Text("Payment Received: RM$paymentReceived"),
-
 
             Text("Outstanding: RM$outstanding"),
 
             isEditing
                 ? DropdownButtonFormField<String>(
-              value: paymentMethod,
-              decoration:
-              const InputDecoration(labelText: "Payment Method"),
-              items: const [
-                DropdownMenuItem(value: "cash", child: Text("Cash")),
-                DropdownMenuItem(value: "card", child: Text("Card")),
-                DropdownMenuItem(value: "transfer", child: Text("Transfer")),
-                DropdownMenuItem(value: "E-Wallet", child: Text("E-Wallet")),
-              ],
-              onChanged: (v) =>
-                  setState(() => paymentMethod = v ?? "cash"),
-            )
+                    value: paymentMethod,
+                    decoration: const InputDecoration(
+                      labelText: "Payment Method",
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: "cash", child: Text("Cash")),
+                      DropdownMenuItem(value: "card", child: Text("Card")),
+                      DropdownMenuItem(
+                        value: "transfer",
+                        child: Text("Transfer"),
+                      ),
+                      DropdownMenuItem(
+                        value: "E-Wallet",
+                        child: Text("E-Wallet"),
+                      ),
+                    ],
+                    onChanged: (v) =>
+                        setState(() => paymentMethod = v ?? "cash"),
+                  )
                 : Text("Payment Method: $paymentMethod"),
 
             const SizedBox(height: 20),
@@ -300,16 +336,48 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
               children: [
                 if (!isEditing)
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
                     onPressed: () => setState(() => isEditing = true),
                     child: const Text("Edit"),
                   ),
                 if (isEditing)
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
                     onPressed: _updateInvoice,
                     child: const Text("Save"),
                   ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, // ✅ Delete = red
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
                   onPressed: _deleteInvoice,
                   child: const Text("Delete"),
                 ),

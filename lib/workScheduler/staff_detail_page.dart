@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 class StaffCalendarPage extends StatefulWidget {
   final String staffId;
+
   const StaffCalendarPage({Key? key, required this.staffId}) : super(key: key);
 
   @override
@@ -41,9 +42,15 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
       if (s.length == 2 && e.length == 2) {
         final sH = int.tryParse(s[0]) ?? 0, sM = int.tryParse(s[1]) ?? 0;
         final eH = int.tryParse(e[0]) ?? 0, eM = int.tryParse(e[1]) ?? 0;
-        total += DateTime(0, 1, 1, eH, eM)
-            .difference(DateTime(0, 1, 1, sH, sM))
-            .inMinutes / 60.0;
+        total +=
+            DateTime(
+              0,
+              1,
+              1,
+              eH,
+              eM,
+            ).difference(DateTime(0, 1, 1, sH, sM)).inMinutes /
+            60.0;
       }
     }
     setState(() => _allTimeHours = total);
@@ -111,38 +118,28 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
         final sM = int.tryParse(sParts[1]) ?? 0;
         final eH = int.tryParse(eParts[0]) ?? 0;
         final eM = int.tryParse(eParts[1]) ?? 0;
-        totalHours += DateTime(0, 1, 1, eH, eM)
-            .difference(DateTime(0, 1, 1, sH, sM))
-            .inMinutes /
+        totalHours +=
+            DateTime(
+              0,
+              1,
+              1,
+              eH,
+              eM,
+            ).difference(DateTime(0, 1, 1, sH, sM)).inMinutes /
             60.0;
       }
     }
 
     return Scaffold(
+      appBar: AppBar(title: const Text('Staff Schedule')),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.schedule),
+        label: const Text("Add Schedule"),
+        onPressed: _openAddScheduleDialog,
+      ),
 
-      appBar: AppBar(
-          title: const Text('Staff Schedule'),
-        actions: [
-          OutlinedButton(
-            onPressed: _openAddScheduleDialog,
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Colors.green),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              'Add Schedule',
-              style: TextStyle(color: Colors.green, fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openAddScheduleDialog,   // 加schedule
-        child: const Icon(Icons.schedule),
-      ),
       body: Column(
         children: [
           if (_staffInfo != null) _buildStaffHeader(), // 顶部资料
@@ -154,10 +151,13 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                   lastDay: DateTime.utc(2030, 12, 31),
                   focusedDay: _focusedDay,
                   selectedDayPredicate: (day) =>
-                  _selectedDay != null &&
+                      _selectedDay != null &&
                       DateTime(day.year, day.month, day.day) ==
-                          DateTime(_selectedDay!.year, _selectedDay!.month,
-                              _selectedDay!.day),
+                          DateTime(
+                            _selectedDay!.year,
+                            _selectedDay!.month,
+                            _selectedDay!.day,
+                          ),
                   eventLoader: (day) => _getEventsForDay(day),
                   onDaySelected: (selectedDay, focusedDay) {
                     setState(() {
@@ -172,83 +172,117 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
+                    titleTextStyle: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green, // ✅ green month/year
+                    ),
+                    leftChevronIcon: Icon(
+                      Icons.chevron_left,
+                      color: Colors.green,
+                    ),
+                    rightChevronIcon: Icon(
+                      Icons.chevron_right,
+                      color: Colors.green,
+                    ),
                   ),
                   calendarStyle: const CalendarStyle(
                     todayDecoration: BoxDecoration(
-                      color: Colors.orange,
+                      color: Colors.green, // ✅ green for today
                       shape: BoxShape.circle,
                     ),
                     selectedDecoration: BoxDecoration(
-                      color: Colors.blue,
+                      color: Colors.lightGreen, // ✅ darker green for selected
                       shape: BoxShape.circle,
                     ),
                     markerDecoration: BoxDecoration(
-                      color: Colors.green,
+                      color: Colors.blue, // ✅ orange markers for contrast
                       shape: BoxShape.circle,
                     ),
+                    outsideDaysVisible: false, // hide days from other months
                   ),
                 ),
+
                 const Divider(),
                 Expanded(
                   child: selectedShifts.isEmpty
                       ? const Center(child: Text('No shift for this day'))
                       : ListView(
-                    padding: const EdgeInsets.all(12),
-                    children: selectedShifts.map((s) {
-                      final ts = s['date'] as Timestamp;
-                      final dayStr = DateFormat('dd/MM/yyyy').format(ts.toDate());
-                      final start = s['shiftStart'] ?? '';
-                      final end = s['shiftEnd'] ?? '';
-                      final status = s['status'] ?? '';
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: ListTile(
-                          leading: const Icon(Icons.schedule, color: Colors.blue),
-                          title: Text('$dayStr  ($status)',
-                              style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('Shift Time: $start – $end'),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () async {
-                              final confirmed = await showDialog<bool>(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: const Text('Delete Schedule'),
-                                  content: Text('Are you sure you want to delete the shift on $dayStr?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(ctx, false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () => Navigator.pop(ctx, true),
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
+                          padding: const EdgeInsets.all(12),
+                          children: selectedShifts.map((s) {
+                            final ts = s['date'] as Timestamp;
+                            final dayStr = DateFormat(
+                              'dd/MM/yyyy',
+                            ).format(ts.toDate());
+                            final start = s['shiftStart'] ?? '';
+                            final end = s['shiftEnd'] ?? '';
+                            final status = s['status'] ?? '';
+                            return Card(
+                              elevation: 2,
+                              margin: const EdgeInsets.symmetric(vertical: 6),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ListTile(
+                                leading: const Icon(
+                                  Icons.schedule,
+                                  color: Colors.blue,
                                 ),
-                              );
+                                title: Text(
+                                  '$dayStr  ($status)',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text('Shift Time: $start – $end'),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () async {
+                                    final confirmed = await showDialog<bool>(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: const Text('Delete Schedule'),
+                                        content: Text(
+                                          'Are you sure you want to delete the shift on $dayStr?',
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, false),
+                                            child: const Text('Cancel'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                Navigator.pop(ctx, true),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                            ),
+                                            child: const Text('Delete'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
 
-                              if (confirmed == true && s['docId'] != null) {
-                                await FirebaseFirestore.instance
-                                    .collection('schedules')
-                                    .doc(s['docId'])
-                                    .delete();
+                                    if (confirmed == true &&
+                                        s['docId'] != null) {
+                                      await FirebaseFirestore.instance
+                                          .collection('schedules')
+                                          .doc(s['docId'])
+                                          .delete();
 
-                                _loadMonthEvents(_focusedDay); // 刷新界面
-                                _loadAllTimeHours();
-                              }
-                            },
-                          ),
+                                      _loadMonthEvents(_focusedDay); // 刷新界面
+                                      _loadAllTimeHours();
+                                    }
+                                  },
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                )
+                ),
               ],
             ),
           ),
@@ -264,8 +298,9 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     final id = _staffInfo?['id'] ?? widget.staffId;
     final hourlyRate = _staffInfo?['hourlyRate'] ?? 0;
     final joined = _staffInfo?['dateJoined'] is Timestamp
-        ? DateFormat('dd/MM/yyyy').format(
-        (_staffInfo!['dateJoined'] as Timestamp).toDate())
+        ? DateFormat(
+            'dd/MM/yyyy',
+          ).format((_staffInfo!['dateJoined'] as Timestamp).toDate())
         : '';
 
     return Card(
@@ -275,16 +310,20 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('$name  ($role)',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              '$name  ($role)',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
             Text('ID: $id'),
             Text('Phone: $phone'),
             Text('Joined: $joined'),
             Text('Hourly Rate: RM${hourlyRate.toString()}'),
             const SizedBox(height: 6),
-            Text('All-time total hours: ${_allTimeHours.toStringAsFixed(1)} h',
-                style: const TextStyle(color: Colors.blue)),
+            Text(
+              'All-time total hours: ${_allTimeHours.toStringAsFixed(1)} h',
+              style: const TextStyle(color: Colors.blue),
+            ),
           ],
         ),
       ),
@@ -292,7 +331,10 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
   }
 
   Future<void> _saveSchedule(
-      DateTime date, TimeOfDay start, TimeOfDay end) async {
+    DateTime date,
+    TimeOfDay start,
+    TimeOfDay end,
+  ) async {
     final startStr =
         '${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}';
     final endStr =
@@ -310,8 +352,9 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     _loadMonthEvents(_focusedDay);
     _loadAllTimeHours();
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Schedule added')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Schedule added')));
   }
 
   void _openAddScheduleDialog() async {
@@ -323,67 +366,199 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setState) {
-            return AlertDialog(
-              title: const Text('Add Schedule'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    title: Text('Date: ${DateFormat('dd/MM/yyyy').format(selectedDate)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: ctx,
-                        initialDate: selectedDate,
-                        firstDate: DateTime(2023),
-                        lastDate: DateTime(2030),
-                      );
-                      if (picked != null) setState(() => selectedDate = picked);
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Shift Start: ${start?.format(ctx) ?? '--:--'}'),
-                    trailing: const Icon(Icons.access_time),
-                    onTap: () async {
-                      final t = await showTimePicker(
-                        context: ctx,
-                        initialTime: const TimeOfDay(hour: 9, minute: 0),
-                      );
-                      if (t != null) setState(() => start = t);
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Shift End: ${end?.format(ctx) ?? '--:--'}'),
-                    trailing: const Icon(Icons.access_time),
-                    onTap: () async {
-                      final t = await showTimePicker(
-                        context: ctx,
-                        initialTime: const TimeOfDay(hour: 17, minute: 0),
-                      );
-                      if (t != null) setState(() => end = t);
-                    },
-                  ),
-                ],
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16), // ✅ rounded corners
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Add Schedule',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green, // ✅ theme color
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Date Picker
+                    ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.green),
+                      ),
+                      title: Text(
+                        'Date: ${DateFormat('dd/MM/yyyy').format(selectedDate)}',
+                      ),
+                      trailing: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.green,
+                      ),
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: ctx,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2023),
+                          lastDate: DateTime(2030),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.light(
+                                  primary: Colors.green,
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null)
+                          setState(() => selectedDate = picked);
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Start time
+                    ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.green),
+                      ),
+                      title: Text(
+                        'Shift Start: ${start?.format(ctx) ?? '--:--'}',
+                      ),
+                      trailing: const Icon(
+                        Icons.access_time,
+                        color: Colors.green,
+                      ),
+                      onTap: () async {
+                        final t = await showTimePicker(
+                          context: ctx,
+                          initialTime: const TimeOfDay(hour: 9, minute: 0),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                timePickerTheme: const TimePickerThemeData(
+                                  dialHandColor: Colors.green,
+                                  entryModeIconColor: Colors.green,
+                                ),
+                                colorScheme: const ColorScheme.light(
+                                  primary: Colors.green,
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (t != null) setState(() => start = t);
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // End time
+                    ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.green),
+                      ),
+                      title: Text('Shift End: ${end?.format(ctx) ?? '--:--'}'),
+                      trailing: const Icon(
+                        Icons.access_time,
+                        color: Colors.green,
+                      ),
+                      onTap: () async {
+                        final t = await showTimePicker(
+                          context: ctx,
+                          initialTime: const TimeOfDay(hour: 17, minute: 0),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                timePickerTheme: const TimePickerThemeData(
+                                  dialHandColor: Colors.green,
+                                  entryModeIconColor: Colors.green,
+                                ),
+                                colorScheme: const ColorScheme.light(
+                                  primary: Colors.green,
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (t != null) setState(() => end = t);
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            if (start != null && end != null) {
+                              final startMinutes =
+                                  start!.hour * 60 + start!.minute;
+                              final endMinutes = end!.hour * 60 + end!.minute;
+
+                              if (endMinutes <= startMinutes) {
+                                // Show inline warning instead of Snackbar behind dialog
+                                showDialog(
+                                  context: ctx,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text("Invalid Time"),
+                                    content: const Text(
+                                      "End time must be after start time",
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(ctx),
+                                        child: const Text("OK"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                return;
+                              }
+
+                              _saveSchedule(selectedDate, start!, end!);
+                              Navigator.pop(ctx);
+                            }
+                          },
+                          child: const Text('Save'),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (start != null && end != null) {
-                      _saveSchedule(
-                        selectedDate,
-                        start!,
-                        end!,
-                      );
-                      Navigator.pop(ctx);
-                    }
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
+              ),
             );
           },
         );
@@ -391,6 +566,3 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     );
   }
 }
-
-
-
