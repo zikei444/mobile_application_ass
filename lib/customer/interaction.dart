@@ -264,7 +264,7 @@ class AppointmentDetailPage extends StatelessWidget {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(backgroundColor: color,
                                       foregroundColor: Colors.white,
-                                      fixedSize: const Size(100, 40)),
+                                      fixedSize: const Size(120, 40)),
       onPressed: onPressed,
       child: Text(text),
     );

@@ -268,7 +268,8 @@ class _SparePartDetailState extends State<SparePartDetail> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add Spare Part'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade300,
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: _showAddPartDialog,
@@ -352,13 +353,15 @@ class _SparePartDetailState extends State<SparePartDetail> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrackPartUsage())),
               child: const Text('Track Part Usage'),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Procurement())),
               child: const Text('Procurement'),
             ),
