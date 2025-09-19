@@ -206,7 +206,7 @@ class _VehicleFormState extends State<VehicleForm> {
                           final vehicleId = await _generateVehicleId();
 
                           await VehicleService().addVehicle(
-                            vehicle_id: vehicleId,
+                            vehicleId: vehicleId,
                             plateNumber: _plateController.text,
                             type: _selectedType!,
                             model: _selectedModel!,

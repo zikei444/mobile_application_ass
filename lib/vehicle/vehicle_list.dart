@@ -73,7 +73,7 @@ class VehicleListPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final v = vehicles[index];
               final data = v.data() as Map<String, dynamic>;
-
+              final vehicleId = data['vehicle_id'] as String; // use vehicle_id
               return ListTile(
                 leading: const Icon(Icons.directions_car),
                 title: Text("${data['plateNumber']} - ${data['type']}"),
@@ -82,22 +82,35 @@ class VehicleListPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => VehicleDetailsPage(
-                        vehicle: {
-                          ...data,
-                          'id': v.id, // make sure 'id' exists
-                        },
-                      ),
+                      builder: (context) => VehicleDetailsPage(vehicle: data ),
                     ),
                   );
                 },
 
                 trailing: IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    VehicleService().deleteVehicle(v.id);
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text("Confirm Delete"),
+                        content: const Text("Delete this vehicle? This cannot be undone."),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+                          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Delete")),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      await VehicleService().deleteVehicle(vehicleId); // pass custom vehicle_id
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Vehicle deleted successfully")),
+                      );
+                    }
                   },
                 ),
+
               );
             },
           );
