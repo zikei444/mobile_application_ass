@@ -88,14 +88,38 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Confirm Delete"),
-        content: const Text("Are you sure you want to delete this invoice?"),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title: const Text(
+          "Confirm Delete",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.green,
+          ),
+        ),
+        content: const Text(
+          "Are you sure you want to delete this invoice?",
+          style: TextStyle(
+            color: Colors.black87,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text("Cancel"),
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Colors.green),
+            ),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text("Delete"),
           ),

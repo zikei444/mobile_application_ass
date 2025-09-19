@@ -68,7 +68,6 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
     }
   }
 
-
   void _loadMonthEvents(DateTime month) async {
     final start = DateTime(month.year, month.month, 1);
     final end = DateTime(month.year, month.month + 1, 1);
@@ -244,26 +243,37 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                                   onPressed: () async {
                                     final confirmed = await showDialog<bool>(
                                       context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Delete Schedule'),
-                                        content: Text(
-                                          'Are you sure you want to delete the shift on $dayStr?',
+                                      builder: (ctx) => Theme(
+                                        data: Theme.of(context).copyWith(
+                                          colorScheme: ColorScheme.light(
+                                            primary: Colors.green,
+                                            onPrimary: Colors.white,
+                                            surface: Colors.white,
+                                            // Dialog background
+                                            onSurface: Colors.black, // Content text color
+                                          ),
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, false),
-                                            child: const Text('Cancel'),
+                                        child: AlertDialog(
+                                          title: const Text('Delete Schedule'),
+                                          content: Text(
+                                            'Are you sure you want to delete the shift on $dayStr?',
                                           ),
-                                          ElevatedButton(
-                                            onPressed: () =>
-                                                Navigator.pop(ctx, true),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx, false),
+                                              child: const Text('Cancel'),
                                             ),
-                                            child: const Text('Delete'),
-                                          ),
-                                        ],
+                                            ElevatedButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(ctx, true),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                foregroundColor: Colors.white,),
+                                              child: const Text('Delete'),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     );
 
@@ -274,7 +284,9 @@ class _StaffCalendarPageState extends State<StaffCalendarPage> {
                                           .doc(s['docId'])
                                           .delete();
 
-                                      _loadMonthEvents(_focusedDay); // refresh page
+                                      _loadMonthEvents(
+                                        _focusedDay,
+                                      ); // refresh page
                                       _loadAllTimeHours();
                                     }
                                   },
