@@ -125,7 +125,7 @@ class InteractionPage extends StatelessWidget {
                             title: Text("Appointment ID: $appointmentId"),
                             subtitle: Text("Date: $formattedDate"),
                             trailing: SizedBox(
-                              width: 110,
+                              width: 150,
                               height: 40,
                               child: Center(
                                 child: Chip(
@@ -262,7 +262,9 @@ class AppointmentDetailPage extends StatelessWidget {
 
   Widget _actionBtn(String text, Color color, VoidCallback onPressed) {
     return ElevatedButton(
-      style: ElevatedButton.styleFrom(backgroundColor: color),
+      style: ElevatedButton.styleFrom(backgroundColor: color,
+                                      foregroundColor: Colors.white,
+                                      fixedSize: const Size(150, 40)),
       onPressed: onPressed,
       child: Text(text),
     );

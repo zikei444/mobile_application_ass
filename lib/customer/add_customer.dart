@@ -71,7 +71,6 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add Customer"),
-        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -138,6 +137,9 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
 
               // Save Button
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white) ,
                 onPressed: _saveCustomer,
                 child: const Text("Save Customer"),
               ),

@@ -98,10 +98,14 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         actions: [
           TextButton(
+            style: ElevatedButton.styleFrom(foregroundColor: Colors.grey),
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white),
             onPressed: () async {
               // Update Firestore with lastEdited timestamp
               await FirebaseFirestore.instance

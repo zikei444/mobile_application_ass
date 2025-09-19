@@ -232,7 +232,7 @@ class _SparePartDetailState extends State<SparePartDetail> {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(16),
-                width: 70,
+                width: 100,
                 decoration: BoxDecoration(
                   color: _getLevelColor().withOpacity(0.3),
                   borderRadius: BorderRadius.circular(12),
@@ -268,7 +268,8 @@ class _SparePartDetailState extends State<SparePartDetail> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add Spare Part'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade300,
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: _showAddPartDialog,
@@ -352,15 +353,17 @@ class _SparePartDetailState extends State<SparePartDetail> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrackPartUsage())),
               child: const Text('Track Part Usage'),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Procurement())),
-              child: const Text('Procurement Requests'),
+              child: const Text('Procurement'),
             ),
             const SizedBox(height: 60),
           ],

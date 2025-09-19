@@ -23,9 +23,9 @@ class _ProcurementState extends State<Procurement> {
   }
 
   String getStockLevel(int quantity) {
-    if (quantity >= 200) return 'maximum';
-    if (quantity >= 150) return 'average';
-    if (quantity >= 70) return 'minimum';
+    if (quantity >= 100) return 'maximum';
+    if (quantity >= 50 && quantity < 100) return 'average';
+    if (quantity >= 20 && quantity < 50) return 'minimum';
     return 'danger';
   }
 
@@ -73,10 +73,14 @@ class _ProcurementState extends State<Procurement> {
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white),
               onPressed: () {
                 final qty = int.tryParse(qtyController.text.trim());
                 if (qty != null && qty > 0) {
@@ -165,7 +169,7 @@ class _ProcurementState extends State<Procurement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Spare Parts Control')),
+      appBar: AppBar(title: const Text('Procurements')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
@@ -214,10 +218,11 @@ class _ProcurementState extends State<Procurement> {
                     DataCell(Text(part['quantity']?.toString() ?? '0')),
                     DataCell(
                       SizedBox(
-                        width: 80,
+                        width: 100,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _getLevelColor(level),
+                            foregroundColor: Colors.white,
                           ),
                           onPressed: () => _handleOrderButton(part),
                           child: const Text('Order', textAlign: TextAlign.center),
@@ -301,7 +306,9 @@ class _ProcurementState extends State<Procurement> {
 
             // Navigation Buttons
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -312,7 +319,9 @@ class _ProcurementState extends State<Procurement> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white),
               onPressed: () {
                 Navigator.push(
                   context,
