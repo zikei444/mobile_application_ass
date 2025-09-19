@@ -232,7 +232,7 @@ class _SparePartDetailState extends State<SparePartDetail> {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(16),
-                width: 70,
+                width: 100,
                 decoration: BoxDecoration(
                   color: _getLevelColor().withOpacity(0.3),
                   borderRadius: BorderRadius.circular(12),
