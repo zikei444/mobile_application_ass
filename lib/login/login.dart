@@ -70,7 +70,7 @@ class Login extends StatelessWidget {
               const SizedBox(height: 80,),
               _emailAddress(),
               const SizedBox(height: 20,),
-              _password(),
+              _password(context),
               const SizedBox(height: 50,),
               _signin(context),
             ],
@@ -117,7 +117,7 @@ class Login extends StatelessWidget {
     );
   }
 
-  Widget _password() {
+  Widget _password(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,29 +125,57 @@ class Login extends StatelessWidget {
         Text(
           'Password',
           style: GoogleFonts.raleway(
-              textStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 16
-              )
+            textStyle: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.normal,
+              fontSize: 16,
+            ),
           ),
         ),
-        const SizedBox(height: 16,),
+        const SizedBox(height: 16),
         TextField(
           obscureText: true,
           controller: _passwordController,
           decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xffF7F7F9) ,
-              border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(14)
-              )
+            filled: true,
+            fillColor: const Color(0xffF7F7F9),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
-        )
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            onTap: () async {
+              if (_emailController.text.isNotEmpty) {
+                await AuthService().resetPassword(
+                  email: _emailController.text,
+                  context: context,
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter your email first.")),
+                );
+              }
+            },
+            child: const Text(
+              "Forgot Password?",
+              style: TextStyle(
+                color: Colors.blue,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
+
 
   Widget _signin(BuildContext context) {
     return ElevatedButton(

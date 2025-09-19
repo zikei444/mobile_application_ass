@@ -32,7 +32,7 @@ class Signup extends StatelessWidget {
               children: [
                 Center(
                     child: Image.asset(
-                      'assets/logo.jpg',
+                      'assets/images/logo.webp',
                       height: 120,
                     ),
                   ),
@@ -141,21 +141,35 @@ class Signup extends StatelessWidget {
         elevation: 0,
       ),
       onPressed: () async {
-        await AuthService().signup(
+        try {
+          await AuthService().signup(
             email: _emailController.text,
             password: _passwordController.text,
-            context: context
-        );
+            context: context,
+          );
+
+          // ✅ After successful signup, go to Login page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => Login()),
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Signup failed: ${e.toString()}")),
+          );
+        }
       },
-      child: const Text("Sign Up",
+      child: const Text(
+        "Sign Up",
         style: TextStyle(
-          color: Colors.white, // ✅ set text color to white
+          color: Colors.white,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
+
 
   Widget _signin(BuildContext context) {
     return Padding(

@@ -8,6 +8,7 @@ import '../home/home.dart';
 import '../login/login.dart';
 
 class AuthService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> signup({
     required String email,
@@ -46,9 +47,7 @@ class AuthService {
         fontSize: 14.0,
       );
     }
-    catch(e){
 
-    }
 
   }
 
@@ -93,9 +92,9 @@ class AuthService {
         fontSize: 14.0,
       );
     }
-    catch(e){
-
-    }
+    // catch(e){
+    //
+    // }
 
   }
 
@@ -109,4 +108,17 @@ class AuthService {
           (route) => false,
     );
   }
+  Future<void> resetPassword({required String email, required BuildContext context}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password reset link sent! Check your email.")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    }
+  }
+
 }
