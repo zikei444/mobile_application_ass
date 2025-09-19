@@ -59,7 +59,7 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
           },
           child: Container(
             padding: const EdgeInsets.all(16),
-            width: 70,
+            width: 100,
             decoration: BoxDecoration(
               color: color.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
