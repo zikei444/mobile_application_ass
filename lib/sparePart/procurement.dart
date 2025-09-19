@@ -23,9 +23,9 @@ class _ProcurementState extends State<Procurement> {
   }
 
   String getStockLevel(int quantity) {
-    if (quantity >= 200) return 'maximum';
-    if (quantity >= 150) return 'average';
-    if (quantity >= 70) return 'minimum';
+    if (quantity >= 100) return 'maximum';
+    if (quantity >= 50 && quantity < 100) return 'average';
+    if (quantity >= 20 && quantity < 50) return 'minimum';
     return 'danger';
   }
 
@@ -218,7 +218,7 @@ class _ProcurementState extends State<Procurement> {
                     DataCell(Text(part['quantity']?.toString() ?? '0')),
                     DataCell(
                       SizedBox(
-                        width: 80,
+                        width: 100,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _getLevelColor(level),
