@@ -170,7 +170,7 @@ class _ProcurementState extends State<Procurement> {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            // ---------------- Procurement Request -----------------
+            // Procurement Request
             const Text(
               'Procurement Request',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -231,7 +231,7 @@ class _ProcurementState extends State<Procurement> {
             ),
             const SizedBox(height: 40),
 
-            // ---------------- Procurement Records -----------------
+            // Procurement Records
             const Text(
               'Procurement Records',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -299,7 +299,7 @@ class _ProcurementState extends State<Procurement> {
             ),
             const SizedBox(height: 40),
 
-            // ---------------- Navigation Buttons -----------------
+            // Navigation Buttons
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
               onPressed: () {

@@ -48,7 +48,7 @@ class InteractionPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                // ===== Vehicle Info (NEW: query by customerId) =====
+                // Vehicle Info
                 FutureBuilder<QuerySnapshot>(
                   future: firestore
                       .collection("vehicles")
@@ -90,7 +90,7 @@ class InteractionPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // ===== Appointments Stream =====
+                // Appointments Stream
                 StreamBuilder<QuerySnapshot>(
                   stream: firestore
                       .collection("appointments")

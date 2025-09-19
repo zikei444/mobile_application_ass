@@ -94,7 +94,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
         padding: const EdgeInsets.all(12),
         child: Column(
           children: [
-            // ===== Apply Calendar Button =====
+            // Apply Calendar Button
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -105,7 +105,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
             ),
             const SizedBox(height: 10),
 
-            // ===== Calendar Picker =====
+            // Calendar Picker
             if (showCalendar)
               Column(
                 children: [
@@ -123,7 +123,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                 ],
               ),
 
-            // ===== Search Bar =====
+            // Search Bar
             TextField(
               controller: searchController,
               decoration: InputDecoration(
@@ -143,7 +143,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
             ),
             const SizedBox(height: 10),
 
-            // ===== Reset Button =====
+            // Reset Butto
             ElevatedButton.icon(
               icon: const Icon(Icons.refresh),
               label: const Text("Reset Filters"),
@@ -151,7 +151,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
             ),
             const SizedBox(height: 10),
 
-            // ===== Usage Table =====
+            // Usage Table
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: getAllUsage(),
@@ -224,7 +224,7 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                 },
               ),
             ),
-            // ---------------- Navigation Buttons -----------------
+            // Navigation Buttons
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
               onPressed: () {

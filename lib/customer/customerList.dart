@@ -21,7 +21,7 @@ class _CustomerListState extends State<CustomerList> {
       appBar: AppBar(title: const Text("Customer List")),
       body: Column(
         children: [
-          // ===== Search and Add Button =====
+          // Search and Add Button
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -60,7 +60,7 @@ class _CustomerListState extends State<CustomerList> {
             ),
           ),
 
-          // ===== Customer List =====
+          // Customer List
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection("customers").snapshots(),
@@ -85,7 +85,7 @@ class _CustomerListState extends State<CustomerList> {
                   return const Center(child: Text("No customers found"));
                 }
 
-                // ===== Stream active appointments =====
+                // Stream active appointments
                 return StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('appointments').snapshots(),
                   builder: (context, appointmentSnap) {

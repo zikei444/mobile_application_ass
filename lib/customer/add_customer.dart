@@ -16,7 +16,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
 
-  /// Generate next Firestore document ID in format C01, C02, ...
+  // Generate next Firestore document ID
   Future<String> _generateDocId() async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -33,8 +33,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
       final nextNum = maxNum + 1;
       return 'C${nextNum.toString().padLeft(2, '0')}';
     } catch (e) {
-      print("Error generating doc ID: $e");
-      return 'C01'; // fallback
+      return 'C01';
     }
   }
 
@@ -43,7 +42,6 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
 
     try {
       final docId = await _generateDocId();
-      print("Generated doc ID: $docId"); // Debug log
 
       await FirebaseFirestore.instance
           .collection('customers')
@@ -62,7 +60,6 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
       );
       Navigator.pop(context);
     } catch (e) {
-      print("Error saving customer: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Failed to save customer: $e")),
       );
@@ -105,9 +102,7 @@ class _AddCustomerPageState extends State<AddCustomerPage> {
                 validator: (value) {
                   if (value == null || value.isEmpty) return "Enter email";
                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                  return emailRegex.hasMatch(value)
-                      ? null
-                      : "Enter valid email";
+                  return emailRegex.hasMatch(value) ? null : "Enter valid email";
                 },
               ),
               const SizedBox(height: 16),
