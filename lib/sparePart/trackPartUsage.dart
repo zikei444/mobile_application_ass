@@ -92,68 +92,80 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
       appBar: AppBar(title: const Text("Track Spare Part Usage")),
       body: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            // Apply Calendar Button
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  showCalendar = !showCalendar;
-                });
-              },
-              child: Text(showCalendar ? "Hide Calendar" : "Apply Calendar"),
-            ),
-            const SizedBox(height: 10),
-
-            // Calendar Picker
-            if (showCalendar)
-              Column(
-                children: [
-                  CalendarDatePicker(
-                    initialDate: selectedDate ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                    onDateChanged: (picked) {
-                      setState(() {
-                        selectedDate = picked;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                ],
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  setState(() {
+                    showCalendar = !showCalendar;
+                  });
+                },
+                child: Text(showCalendar ? "Hide Calendar" : "Apply Calendar"),
               ),
+              const SizedBox(height: 10),
 
-            // Search Bar
-            TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: showCalendar
-                    ? "Search by Invoice ID or spare part ID"
-                    : "Search by invoice ID or spare part ID",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+              if (showCalendar)
+                Column(
+                  children: [
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        colorScheme: const ColorScheme.light(
+                          primary: Colors.green,
+                          onPrimary: Colors.white,
+                          onSurface: Colors.black,
+                        ),
+                      ),
+                      child: CalendarDatePicker(
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                        onDateChanged: (picked) {
+                          setState(() {
+                            selectedDate = picked;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+
+              TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: showCalendar
+                      ? "Search by Invoice ID or spare part ID"
+                      : "Search by invoice ID or spare part ID",
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+
+              ElevatedButton.icon(
+                icon: const Icon(Icons.refresh),
+                label: const Text("Reset Filters"),
+                onPressed: resetFilters,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                 ),
               ),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value.toLowerCase();
-                });
-              },
-            ),
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // Reset Butto
-            ElevatedButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text("Reset Filters"),
-              onPressed: resetFilters,
-            ),
-            const SizedBox(height: 10),
-
-            // Usage Table
-            Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+              StreamBuilder<QuerySnapshot>(
                 stream: getAllUsage(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -165,7 +177,6 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
 
                   List<QueryDocumentSnapshot> filteredDocs = snapshot.data!.docs;
 
-                  // Apply calendar + search filter
                   if (showCalendar) {
                     if (selectedDate != null) {
                       filteredDocs = filteredDocs.where((doc) {
@@ -194,7 +205,6 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                       }).toList();
                     }
                   } else {
-                    // Search bar filter
                     if (searchQuery.isNotEmpty) {
                       filteredDocs = filteredDocs.where((doc) {
                         final usage = doc.data() as Map<String, dynamic>;
@@ -211,42 +221,57 @@ class _TrackPartUsageState extends State<TrackPartUsage> {
                     }
                   }
 
-                  // Sort by usage ID
                   filteredDocs.sort((a, b) {
                     final idA = (a['id'] ?? '');
                     final idB = (b['id'] ?? '');
-                    final numA = int.tryParse(idA.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-                    final numB = int.tryParse(idB.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+                    final numA =
+                        int.tryParse(idA.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+                    final numB =
+                        int.tryParse(idB.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
                     return numA.compareTo(numB);
                   });
 
                   return buildUsageTable(filteredDocs);
                 },
               ),
-            ),
-            // Navigation Buttons
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Procurement()),
-                );
-              },
-              child: const Text('Procurement Request'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SparePartDashboard()),
-                );
-              },
-              child: const Text('Spare Part Control'),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Procurement()),
+                    );
+                  },
+                  child: const Text('Procurements'),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SparePartDashboard()),
+                    );
+                  },
+                  child: const Text('Spare Part Control'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

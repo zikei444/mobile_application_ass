@@ -195,6 +195,7 @@ class _CustomerListState extends State<CustomerList> {
                                         actions: [
                                           TextButton(
                                             onPressed: () => Navigator.pop(context, false),
+                                            style: TextButton.styleFrom(foregroundColor: Colors.grey),
                                             child: const Text("Cancel"),
                                           ),
                                           TextButton(

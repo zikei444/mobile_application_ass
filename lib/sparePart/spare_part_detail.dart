@@ -360,7 +360,7 @@ class _SparePartDetailState extends State<SparePartDetail> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const Procurement())),
-              child: const Text('Procurement Requests'),
+              child: const Text('Procurement'),
             ),
             const SizedBox(height: 60),
           ],

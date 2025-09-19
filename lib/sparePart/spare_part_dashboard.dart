@@ -132,9 +132,13 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
             ElevatedButton(
               child: const Text('Save'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () async {
                 if (nameCtrl.text.trim().isEmpty || categoryCtrl.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -222,8 +226,12 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
+              onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                            foregroundColor: Colors.white),
             onPressed: () async {
               await _firestore.collection('spare_parts').doc(part['id']).update({
                 'name': nameCtrl.text.trim(),
@@ -280,7 +288,8 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
                 icon: const Icon(Icons.add),
                 label: const Text('Add New Spare Part'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade300,
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
                 onPressed: _showAddPartDialog,
@@ -353,6 +362,7 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
                                           'Are you sure you want to delete ${p['name']}?'),
                                       actions: [
                                         TextButton(
+                                          style: TextButton.styleFrom(foregroundColor: Colors.grey),
                                           onPressed: () => Navigator.pop(context, false),
                                           child: const Text('Cancel'),
                                         ),
@@ -360,7 +370,8 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
                                           onPressed: () => Navigator.pop(context, true),
                                           child: const Text('Delete'),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red.shade300,
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
                                           ),
                                         ),
                                       ],
@@ -389,7 +400,8 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () {
                 Navigator.push(
                     context, MaterialPageRoute(builder: (_) => const TrackPartUsage()));
@@ -398,11 +410,12 @@ class _SparePartDashboardState extends State<SparePartDashboard> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade300),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green,
+                                              foregroundColor: Colors.white),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const Procurement()));
               },
-              child: const Text('Procurement Requests'),
+              child: const Text('Procurement'),
             ),
             const SizedBox(height: 20),
           ],
