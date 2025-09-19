@@ -33,10 +33,9 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
     final data = snap.data();
     if (data == null) return;
 
-    final vehicleQuery = await FirebaseFirestore.instance
+    final vehicleDoc = await FirebaseFirestore.instance
         .collection("vehicles")
-        .where("vehicle_id", isEqualTo: data['vehicle_id'])
-        .limit(1)
+        .doc(data['vehicle_id'])
         .get();
 
     final staffSnap = await FirebaseFirestore.instance
@@ -46,8 +45,8 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
 
     setState(() {
       invoiceData = data;
-      vehicleData = vehicleQuery.docs.isNotEmpty
-          ? vehicleQuery.docs.first.data() as Map<String, dynamic>
+      vehicleData = vehicleDoc.exists
+          ? vehicleDoc.data() as Map<String, dynamic>
           : null;
       staffData = staffSnap.data();
       paymentReceived = (data['payment_receive'] as num).toDouble();
@@ -71,11 +70,11 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
         .collection("invoice")
         .doc(widget.invoiceId)
         .update({
-          "payment_receive": paymentReceived,
-          "payment_method": paymentMethod,
-          "outstanding": outstanding,
-          "status": status,
-        });
+      "payment_receive": paymentReceived,
+      "payment_method": paymentMethod,
+      "outstanding": outstanding,
+      "status": status,
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Invoice updated successfully")),
@@ -282,54 +281,54 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
 
             isEditing
                 ? TextFormField(
-                    initialValue: paymentReceived.toString(),
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: "Payment Received",
+              initialValue: paymentReceived.toString(),
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "Payment Received",
+              ),
+              onChanged: (v) {
+                double entered = double.tryParse(v) ?? 0;
+                // validation: paymentReceived < total
+                if (entered > (invoiceData?['total'] ?? 0)) {
+                  entered = (invoiceData?['total'] ?? 0).toDouble();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        "Payment received cannot exceed total",
+                      ),
                     ),
-                    onChanged: (v) {
-                      double entered = double.tryParse(v) ?? 0;
-                      // validation: paymentReceived < total
-                      if (entered > (invoiceData?['total'] ?? 0)) {
-                        entered = (invoiceData?['total'] ?? 0).toDouble();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Payment received cannot exceed total",
-                            ),
-                          ),
-                        );
-                      }
-                      setState(() {
-                        paymentReceived = entered;
-                      });
-                    },
-                  )
+                  );
+                }
+                setState(() {
+                  paymentReceived = entered;
+                });
+              },
+            )
                 : Text("Payment Received: RM$paymentReceived"),
 
             Text("Outstanding: RM$outstanding"),
 
             isEditing
                 ? DropdownButtonFormField<String>(
-                    value: paymentMethod,
-                    decoration: const InputDecoration(
-                      labelText: "Payment Method",
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: "cash", child: Text("Cash")),
-                      DropdownMenuItem(value: "card", child: Text("Card")),
-                      DropdownMenuItem(
-                        value: "transfer",
-                        child: Text("Transfer"),
-                      ),
-                      DropdownMenuItem(
-                        value: "E-Wallet",
-                        child: Text("E-Wallet"),
-                      ),
-                    ],
-                    onChanged: (v) =>
-                        setState(() => paymentMethod = v ?? "cash"),
-                  )
+              value: paymentMethod,
+              decoration: const InputDecoration(
+                labelText: "Payment Method",
+              ),
+              items: const [
+                DropdownMenuItem(value: "cash", child: Text("Cash")),
+                DropdownMenuItem(value: "card", child: Text("Card")),
+                DropdownMenuItem(
+                  value: "transfer",
+                  child: Text("Transfer"),
+                ),
+                DropdownMenuItem(
+                  value: "E-Wallet",
+                  child: Text("E-Wallet"),
+                ),
+              ],
+              onChanged: (v) =>
+                  setState(() => paymentMethod = v ?? "cash"),
+            )
                 : Text("Payment Method: $paymentMethod"),
 
             const SizedBox(height: 20),

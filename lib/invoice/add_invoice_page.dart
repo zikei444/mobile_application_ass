@@ -204,17 +204,13 @@ class _AddInvoicePageState extends State<AddInvoicePage> {
                 builder: (context, snap) {
                   if (!snap.hasData) return const CircularProgressIndicator();
                   final vehicles = snap.data!.docs;
-                  vehicles.sort((a, b) {
-                    final idA = (a['vehicle_id'] ?? '').toString();
-                    final idB = (b['vehicle_id'] ?? '').toString();
-                    return idA.compareTo(idB);
-                  });
+                  vehicles.sort((a, b) => a.id.compareTo(b.id));
 
                   return DropdownButtonFormField<String>(
                     decoration: _greenInputDecoration("Vehicle"),
                     value: vehicleId,
                     items: vehicles.map((c) {
-                      final id = (c['vehicle_id'] ?? '').toString();
+                      final id = c.id;
                       final plate = (c['plateNumber'] ?? 'Vehicle No Longer Exist in System').toString();
                       return DropdownMenuItem<String>(
                         value: id,

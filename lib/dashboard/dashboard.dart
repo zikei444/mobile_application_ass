@@ -57,57 +57,6 @@ class _DashboardState extends State<Dashboard> {
     super.initState();
     _loadCounts(); // load counts from Firestore
   }
-    //
-    // // Initialize dashboard modules (label, icon, Firestore collection, page)
-    // dashboardItems.addAll([
-    //   {'label': 'Vehicles', 'icon': Icons.directions_car, 'collection': 'vehicles', 'page': VehicleListPage()},
-    //   {'label': 'Customers', 'icon': Icons.person, 'collection': 'customers', 'page': const CustomerList()},
-    //   {'label': 'Schedules', 'icon': Icons.schedule, 'collection': 'staff', 'page': const CalendarPage()},
-    //   {'label': 'Spare Parts', 'icon': Icons.build, 'collection': 'spareParts', 'page': SparePartDashboard()},
-    // ]);
-
-    //   dashboardItems.addAll([
-  //     {
-  //       'label': 'Vehicles',
-  //       'icon': Icons.directions_car,
-  //       'count': () => vehicleCount,
-  //       'page': VehicleListPage(),
-  //     },
-  //     {
-  //       'label': 'Customers',
-  //       'icon': Icons.person,
-  //       'count': () => customerCount,
-  //       'page': const CustomerList(),
-  //     },
-  //     {
-  //       'label': 'Job Schedules',
-  //       'icon': Icons.schedule,
-  //       'count': () => scheduleCount,
-  //       'page': const CalendarPage(),
-  //     },
-  //     {
-  //       'label': 'Spare Parts',
-  //       'icon': Icons.build,
-  //       'count': () => sparePartCount,
-  //       'page': SparePartDashboard(),
-  //     },
-  //   ]);
-  // }
-
-  // Future<void> _loadCounts() async {
-  //   final vehicleSnap = await FirebaseFirestore.instance.collection('vehicles').get();
-  //   final customerSnap = await FirebaseFirestore.instance.collection('customers').get();
-  //   final scheduleSnap = await FirebaseFirestore.instance.collection('schedules').get();
-  //   final spareSnap = await FirebaseFirestore.instance.collection('spareParts').get();
-  //
-  //   setState(() {
-  //     vehicleCount = vehicleSnap.size;
-  //     customerCount = customerSnap.size;
-  //     scheduleCount = scheduleSnap.size;
-  //     sparePartCount = spareSnap.size;
-  //   });
-  // }
-
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +137,8 @@ class _DashboardState extends State<Dashboard> {
               child: GridView.count(
                 crossAxisCount: 2, // 2 cards per row
                 shrinkWrap: true, // ✅ makes GridView take minimum heig
-                  children: [
+                  physics: const NeverScrollableScrollPhysics(),
+                children: [
                   _buildDashboardCard(Icons.directions_car, "Vehicles", "$vehicleCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => VehicleListPage()));
                   }),
@@ -201,8 +151,7 @@ class _DashboardState extends State<Dashboard> {
                   _buildDashboardCard(Icons.build, "Spare Parts", "$sparePartCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => SparePartDashboard()));
                   }),
-                  ],
-                physics: const NeverScrollableScrollPhysics(), // ✅ disable GridView’s own scroll
+                  ], // ✅ disable GridView’s own scroll
 
               ),
             ),
@@ -307,47 +256,7 @@ class _DashboardState extends State<Dashboard> {
                 );
               },
             )
-   // StreamBuilder<QuerySnapshot>(
-        //   stream: FirebaseFirestore.instance
-        //       .collection('schedules')
-        //       .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(todayEnd)) // 👈 tomorrow onwards
-        //       .orderBy('date', descending: false) // sort by date
-        //       .limit(5) // 👈 only show next 5 jobs
-        //       .snapshots(),
-        //   builder: (context, snap) {
-        //     if (snap.connectionState == ConnectionState.waiting) {
-        //       return const Center(child: CircularProgressIndicator());
-        //     }
-        //     if (snap.hasError) {
-        //       return Center(child: Text('Error: ${snap.error}'));
-        //     }
-        //     final docs = snap.data?.docs ?? [];
-        //     if (docs.isEmpty) {
-        //       return const Center(child: Text('No upcoming schedules'));
-        //     }
-        //
-        //     return ListView.builder(
-        //       shrinkWrap: true,
-        //       physics: const NeverScrollableScrollPhysics(),
-        //       itemCount: docs.length,
-        //       itemBuilder: (context, i) {
-        //         final d = docs[i].data() as Map<String, dynamic>;
-        //         final staffId = d['staffId'] ?? '';
-        //         final startTime = d['shiftStart'] ?? '';
-        //         final endTime = d['shiftEnd'] ?? '';
-        //         final date = (d['date'] as Timestamp).toDate();
-        //
-        //         return Card(
-        //           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        //           child: ListTile(
-        //             leading: const Icon(Icons.event, color: Colors.blue),
-        //             title: Text("Job on ${date.toLocal().toString().split(' ')[0]}"),
-        //             subtitle: Text("Shift: $startTime – $endTime"),
-        //           ),
-        //         );
-        //       },
-        //     );
-        //   },
+
         // ),
            ],
         ),

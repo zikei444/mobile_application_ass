@@ -16,7 +16,7 @@ class _VehicleFormState extends State<VehicleForm> {
   final TextEditingController _plateController = TextEditingController();
   final TextEditingController _kmController = TextEditingController();
   final TextEditingController _sizeController = TextEditingController();
-
+  final TextEditingController _vinController = TextEditingController();
   String? _selectedType;
   String? _selectedModel;
   String? _selectedCustomerId;
@@ -56,7 +56,7 @@ class _VehicleFormState extends State<VehicleForm> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add Vehicle"),
-        backgroundColor: Colors.blue,
+       //backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -158,6 +158,25 @@ class _VehicleFormState extends State<VehicleForm> {
                     validator: (value) => value!.isEmpty ? "Enter size" : null,
                   ),
                   const SizedBox(height: 16),
+                  // inside the Form children:
+                  TextFormField(
+                    controller: _vinController,
+                    decoration: const InputDecoration(
+                      labelText: "Vehicle Identification Number (VIN)",
+                      hintText: "Enter 17-character VIN",
+                      border: OutlineInputBorder(),
+                    ),
+
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "VIN is required";
+                      } else if (value.length != 17) {
+                        return "VIN must be 17 characters";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
                   // Customer ID Dropdown (with name)
                   DropdownButtonFormField<String>(
@@ -199,6 +218,13 @@ class _VehicleFormState extends State<VehicleForm> {
 
                   // Save Button
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF138146), // your green color
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -212,6 +238,7 @@ class _VehicleFormState extends State<VehicleForm> {
                             model: _selectedModel!,
                             kilometer: int.parse(_kmController.text),
                             size: int.parse(_sizeController.text),
+                            vin: _vinController.text,
                             customerId: _selectedCustomerId!,
                           );
 
@@ -223,7 +250,10 @@ class _VehicleFormState extends State<VehicleForm> {
                         }
                       }
                     },
-                    child: const Text("Save Vehicle"),
+                    child: const Text("Save Vehicle",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+
+                    ),
                   ),
                 ],
               );

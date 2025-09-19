@@ -12,6 +12,7 @@ class VehicleService {
     required String model,
     required int kilometer,
     required int size,
+    required String vin,
   }) async {
     await vehicles.doc(vehicleId).set({
       'vehicle_id' : vehicleId,
@@ -21,6 +22,7 @@ class VehicleService {
       'model': model,
       'kilometer': kilometer,
       'size': size,
+      'vin': vin,
       'createdAt': FieldValue.serverTimestamp(),
     });
 

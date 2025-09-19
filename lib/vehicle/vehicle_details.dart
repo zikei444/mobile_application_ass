@@ -80,96 +80,77 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== Vehicle Details Card =====
-            // Card(
-            //   elevation: 4,
-            //   shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(12)),
-            //   child: Padding(
-            //     padding: const EdgeInsets.all(16.0),
-            //     child: Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         _buildDetailRow(
-            //             "Plate Number", (vehicle['plateNumber'] ?? "-").toString()),
-            //         _buildDetailRow(
-            //             "Type", (vehicle['type'] ?? "-").toString()),
-            //         _buildDetailRow(
-            //             "Model", (vehicle['model'] ?? "-").toString()),
-            //         _buildDetailRow(
-            //             "Kilometer", (vehicle['kilometer']?.toString() ?? "-")),
-            //         _buildDetailRow(
-            //             "Size", (vehicle['size'] ?? "-").toString()),
-            //       ],
-            //     ),
-            //   ),
-            // ),
             // ===== Vehicle Details Card with Plate Number as Title =====
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ===== Plate Number Row with Edit Icon =====
-                    // ===== Inside your VehicleDetailsPage, in the _buildDetailRow() area =====
-// Add an edit button beside Plate Number
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          vehicle['plateNumber']?.toString() ?? "-",
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 16), // spacing below
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1E3E2),//0xFF138146), // your green
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ===== Plate Number Row with Edit Icon =====
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        vehicle['plateNumber']?.toString() ?? "-",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87, // white for contrast
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.grey),
-                          onPressed: () => _showEditVehicleForm(vehicle),
-                        ),
-                      ],
-                    ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.white),
+                        onPressed: () => _showEditVehicleForm(vehicle),
+                      ),
+                    ],
+                  ),
 
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                    // ===== First Row: Type | Model | Kilometer =====
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Type: ${(vehicle['type'] ?? '-').toString()}",
-                            style: const TextStyle(fontSize: 16, color: Colors
-                                .grey)),
-                        Text("Model: ${(vehicle['model'] ?? '-').toString()}",
-                            style: const TextStyle(fontSize: 16, color: Colors
-                                .grey)),
-                        Text("KM: ${(vehicle['kilometer']?.toString() ?? '-')}",
-                            style: const TextStyle(fontSize: 16, color: Colors
-                                .grey)),
-                      ],
-                    ),
+                  // ===== First Row: Type | Model | Kilometer =====
+                  // ===== First Row: Type | Model | Kilometer =====
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Type: ${(vehicle['type'] ?? '-').toString()}",
+                          style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                      Text("Model: ${(vehicle['model'] ?? '-').toString()}",
+                          style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                      Text("KM: ${(vehicle['kilometer']?.toString() ?? '-')}",
+                          style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                    ],
+                  ),
 
-                    const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-                    // ===== Second Row: Size | (empty slot) =====
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text("Size: ${(vehicle['size'] ?? '-').toString()}",
-                            style: const TextStyle(fontSize: 16, color: Colors
-                                .black)),
-                        const SizedBox(width: 16),
-                        // You can add another detail here later if needed
-                        Text("",
-                            style: const TextStyle(fontSize: 16, color: Colors
-                                .black)),
-                      ],
-                    ),
-                  ],
-                ),
+                  // ===== Second Row: Size | VIN =====
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Size: ${(vehicle['size'] ?? '-').toString()}",
+                          style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                      Text("VIN: ${(vehicle['vin'] ?? '-').toString()}",
+                          style: const TextStyle(fontSize: 16, color: Colors.black54)),
+                    ],
+                  ),
+
+                ],
               ),
             ),
+
 
 
             const SizedBox(height: 24),
@@ -324,7 +305,7 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text("Edit Vehicle"),
+              title: const Text("Edit Vehicle Details"),
               content: SingleChildScrollView(
                 child: Form(
                   key: _formKey,
