@@ -17,7 +17,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
   bool isEditing = false;
 
   double paymentReceived = 0;
-  String paymentMethod = "cash";
+  String paymentMethod = "Cash";
 
   @override
   void initState() {
@@ -50,7 +50,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
           : null;
       staffData = staffSnap.data();
       paymentReceived = (data['payment_receive'] as num).toDouble();
-      paymentMethod = data['payment_method'] ?? "cash";
+      paymentMethod = data['payment_method'] ?? "Cash";
     });
   }
 
@@ -339,10 +339,10 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                 labelText: "Payment Method",
               ),
               items: const [
-                DropdownMenuItem(value: "cash", child: Text("Cash")),
-                DropdownMenuItem(value: "card", child: Text("Card")),
+                DropdownMenuItem(value: "Cash", child: Text("Cash")),
+                DropdownMenuItem(value: "Card", child: Text("Card")),
                 DropdownMenuItem(
-                  value: "transfer",
+                  value: "Transfer",
                   child: Text("Transfer"),
                 ),
                 DropdownMenuItem(
@@ -351,7 +351,7 @@ class _InvoiceDetailsPageState extends State<InvoiceDetailsPage> {
                 ),
               ],
               onChanged: (v) =>
-                  setState(() => paymentMethod = v ?? "cash"),
+                  setState(() => paymentMethod = v ?? "Cash"),
             )
                 : Text("Payment Method: $paymentMethod"),
 
