@@ -477,7 +477,7 @@ class _VehicleDetailsPageState extends State<VehicleDetailsPage> {
                         'size': int.tryParse(_sizeController.text) ?? 0,
                       });
 
-                      // ✅ Update the local map so UI refreshes immediately
+
                       setState(() {
                         vehicle['plateNumber'] = _plateController.text;
                         vehicle['type'] = _selectedType;

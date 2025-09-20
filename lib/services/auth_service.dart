@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../dashboard/dashboard.dart';
-import '../home/home.dart';
+// import '../home/home.dart';
 import '../login/login.dart';
 
 class AuthService {
@@ -27,7 +27,7 @@ class AuthService {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (BuildContext context) => const Home()
+              builder: (BuildContext context) => Login()
           )
       );
 
@@ -65,7 +65,7 @@ class AuthService {
       );
 
       await Future.delayed(const Duration(seconds: 1));
-      // ✅ Go to Dashboard if login successful
+      //Go to Dashboard if login successful
       final user = FirebaseAuth.instance.currentUser;
       Navigator.pushReplacement(
         context,

@@ -75,7 +75,7 @@ class _VehicleListPageState extends State<VehicleListPage> {
       ),
       body: Column(
         children: [
-          // 🔹 Search Bar
+          // Search Bar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -91,69 +91,8 @@ class _VehicleListPageState extends State<VehicleListPage> {
               },
             ),
           ),
-          // 🔹 Add this dropdown above the ListView.builder (e.g., below AppBar or above StreamBuilder)
-          // Padding(
-          //   padding: const EdgeInsets.all(8.0),
-          //   child: Row(
-          //     children: [
-          //       const Text("Filter by Brand: "),
-          //       const SizedBox(width: 10),
-          //       DropdownButton<String>(
-          //         value: brandFilter,
-          //         items: ["All", "Mercedes", "BMW"].map((brand) {
-          //           return DropdownMenuItem(value: brand, child: Text(brand));
-          //         }).toList(),
-          //         onChanged: (value) {
-          //           setState(() {
-          //             brandFilter = value!;
-          //           });
-          //         },
-          //       ),
-          //     ],
-          //   ),
-          // ),
-          // // 🔹 Filter Dropdown
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          //   child: Row(
-          //     children: [
-          //       DropdownButton<String>(
-          //         value: filterType,
-          //         items: ["All", "Car", "Bike", "Van"].map((type) {
-          //           return DropdownMenuItem(value: type, child: Text(type));
-          //         }).toList(),
-          //         onChanged: (value) {
-          //           setState(() {
-          //             filterType = value!;
-          //           });
-          //         },
-          //       ),
-          //       const Spacer(),
-          //       DropdownButton<String>(
-          //         value: sortBy,
-          //         items: ["plateNumber", "model", "kilometer"].map((sort) {
-          //           return DropdownMenuItem(value: sort, child: Text(sort));
-          //         }).toList(),
-          //         onChanged: (value) {
-          //           setState(() {
-          //             sortBy = value!;
-          //           });
-          //         },
-          //       ),
-          //       IconButton(
-          //         icon: Icon(ascending ? Icons.arrow_upward : Icons.arrow_downward),
-          //         onPressed: () {
-          //           setState(() {
-          //             ascending = !ascending;
-          //           });
-          //         },
-          //       ),
-          //     ],
-          //   ),
-          // ),
 
-
-          // 🔹 Vehicle List
+          // Vehicle List
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: VehicleService().getVehicles(),
@@ -175,11 +114,8 @@ class _VehicleListPageState extends State<VehicleListPage> {
                       data['type'].toString().toLowerCase().contains(searchQuery);
                 }).toList();
 
-                // Apply type filter
-                // if (filterType != "All") {
-                //   filteredVehicles = filteredVehicles.where((data) => data['type'] == filterType).toList();
-                // }
-                // 🔹 Apply brand filter
+
+                // Apply brand filter
                 if (brandFilter != "All") {
                   List<String> allowedModels = vehicleModels[brandFilter] ?? [];
                   filteredVehicles = filteredVehicles.where((data) {
@@ -188,9 +124,6 @@ class _VehicleListPageState extends State<VehicleListPage> {
                     return brand == brandFilter && allowedModels.contains(model);
                   }).toList();
                 }
-
-                // Place this AFTER search filter but BEFORE type filter (or replace type filter)
-
 
                 // Apply sorting
                 filteredVehicles.sort((a, b) {

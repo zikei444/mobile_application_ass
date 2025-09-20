@@ -41,7 +41,7 @@ class VehicleService {
   Future<void> updateVehicleByVehicleId(
       String vehicleId, Map<String, dynamic> data) async {
     try {
-      // 1️⃣ Query Firestore for the document with the matching vehicleId
+
       final snapshot = await vehicles
           .where('vehicle_id', isEqualTo: vehicleId)
           .get();
@@ -52,10 +52,10 @@ class VehicleService {
         return;
       }
 
-      // 2️⃣ Use the first matching document (assuming vehicle_id is unique)
+
       final docRef = snapshot.docs.first.reference;
 
-      // 3️⃣ Update the document with new data
+
       await docRef.update(data);
 
       print("Vehicle updated successfully: $vehicleId");

@@ -141,14 +141,41 @@ class Signup extends StatelessWidget {
         elevation: 0,
       ),
       onPressed: () async {
+        final email = _emailController.text.trim();
+        final password = _passwordController.text.trim();
+
+        // mail validation
+        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$').hasMatch(email)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Please enter a valid email address.")),
+          );
+          return;
+        }
+
+        // password validation
+        if (password.isEmpty || password.length < 6) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Password must be at least 6 characters.")),
+          );
+          return;
+        }
+
         try {
           await AuthService().signup(
-            email: _emailController.text,
-            password: _passwordController.text,
+            email: email,
+            password: password,
             context: context,
           );
 
-          // ✅ After successful signup, go to Login page
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Signup successful! Please log in.")),
+          );
+
+          // Small delay to let user see the message
+          await Future.delayed(const Duration(seconds: 1));
+
+          // Navigate to Login page
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => Login()),
@@ -169,6 +196,7 @@ class Signup extends StatelessWidget {
       ),
     );
   }
+
 
 
   Widget _signin(BuildContext context) {

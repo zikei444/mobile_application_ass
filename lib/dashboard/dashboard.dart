@@ -135,8 +135,8 @@ class _DashboardState extends State<Dashboard> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: GridView.count(
-                crossAxisCount: 2, // 2 cards per row
-                shrinkWrap: true, // ✅ makes GridView take minimum heig
+                crossAxisCount: 2,
+                shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildDashboardCard(Icons.directions_car, "Vehicles", "$vehicleCount", () {
@@ -151,7 +151,7 @@ class _DashboardState extends State<Dashboard> {
                   _buildDashboardCard(Icons.build, "Spare Parts", "$sparePartCount", () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => SparePartDashboard()));
                   }),
-                  ], // ✅ disable GridView’s own scroll
+                  ],
 
               ),
             ),
@@ -267,9 +267,9 @@ class _DashboardState extends State<Dashboard> {
   // Helper widget to build cards
   Widget _buildDashboardCard(IconData icon, String title, String count, VoidCallback onTap) {
     return InkWell(
-      onTap: onTap, // ✅ add navigation action here
+      onTap: onTap,
       child: Card(
-        color: const Color(0xFFD1E3E2), // ✅ custom background color
+        color: const Color(0xFFD1E3E2),
         elevation: 4,
         margin: const EdgeInsets.all(12),
         child: Padding(
